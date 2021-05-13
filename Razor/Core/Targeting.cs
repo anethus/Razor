@@ -929,7 +929,6 @@ namespace Assistant
 
             m_FromGrabHotKey = false;
 
-            ScriptManager.SetVariableActive = false;
             ScriptManager.SetLastTargetActive = false;
 
             if (m_HasTarget)

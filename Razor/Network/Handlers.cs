@@ -1928,14 +1928,6 @@ namespace Assistant
             string sourceName = p.ReadStringSafe(30);
             string text = p.ReadStringSafe();
 
-            if (World.Player != null && serial == Serial.Zero && graphic == 0 && type == MessageType.Regular &&
-                hue == 0xFFFF && font == 0xFFFF && sourceName == "SYSTEM")
-            {
-                args.Block = true;
-                Client.Instance.SendToServer(new ACKTalk());
-                return;
-            }
-
             MessageManager.HandleMessage(p, args, serial, graphic, type, hue, font, "A", sourceName, text);
         }
 

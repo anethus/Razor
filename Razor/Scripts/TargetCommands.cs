@@ -40,11 +40,11 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("wft", WaitForTarget); //WaitForTargetAction
         }
 
-        private static bool Target(string command, Argument[] args, bool quiet, bool force)
+        private static bool Target(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: target (serial) OR target (closest/random/next/prev [noto] [type]");
+                throw new RunTimeError("Usage: target (serial) OR target (closest/random/next/prev [noto] [type]");
             }
 
             switch (args[0].AsString())
@@ -109,14 +109,14 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool TargetType(string command, Argument[] args, bool quiet, bool force)
+        private static bool TargetType(string command, Variable[] args, bool quiet, bool force)
         {
             if (Targeting.FromGrabHotKey)
                 return false;
 
             if (args.Length < 1)
             {
-                throw new RunTimeError(null,
+                throw new RunTimeError(
                     "Usage: targettype (graphic) OR ('name of item or mobile type') [inrangecheck/backpack]");
             }
 
@@ -179,14 +179,14 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool TargetRelLoc(string command, Argument[] args, bool quiet, bool force)
+        private static bool TargetRelLoc(string command, Variable[] args, bool quiet, bool force)
         {
             if (Targeting.FromGrabHotKey)
                 return false;
 
             if (args.Length < 2)
             {
-                throw new RunTimeError(null, "Usage: targetrelloc (x-offset) (y-offset)");
+                throw new RunTimeError("Usage: targetrelloc (x-offset) (y-offset)");
             }
 
             int xoffset = Utility.ToInt32(args[0].AsString(), 0);
@@ -203,17 +203,17 @@ namespace Assistant.Scripts
             }
             catch (Exception e)
             {
-                throw new RunTimeError(null, $"{command} - Error Executing: {e.Message}");
+                throw new RunTimeError($"{command} - Error Executing: {e.Message}");
             }
 
             return true;
         }
 
-        private static bool TargetLocation(string command, Argument[] args, bool quiet, bool force)
+        private static bool TargetLocation(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 2)
             {
-                throw new RunTimeError(null, "Usage: targetloc (x) (y) (z)");
+                throw new RunTimeError("Usage: targetloc (x) (y) (z)");
             }
 
             Targeting.Target(new TargetInfo
@@ -230,7 +230,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool WaitForTarget(string command, Argument[] args, bool quiet, bool force)
+        private static bool WaitForTarget(string command, Variable[] args, bool quiet, bool force)
         {
             if (Targeting.HasTarget)
             {

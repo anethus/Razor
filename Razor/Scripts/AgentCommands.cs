@@ -39,11 +39,11 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("sell", SellAgentCommand);
         }
 
-        private static bool RestockAgentCommand(string command, Argument[] args, bool quiet, bool force)
+        private static bool RestockAgentCommand(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: restock (number) ['set']");
+                throw new RunTimeError("Usage: restock (number) ['set']");
             }
 
             int agentNum = args[0].AsInt();
@@ -70,7 +70,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool UseOnceCommand(string command, Argument[] args, bool quiet, bool force)
+        private static bool UseOnceCommand(string command, Variable[] args, bool quiet, bool force)
         {
             bool add = false;
             bool container = false;
@@ -103,11 +103,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool OrganizerAgentCommand(string command, Argument[] args, bool quiet, bool force)
+        private static bool OrganizerAgentCommand(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: organizer (number) ['set']");
+                throw new RunTimeError("Usage: organizer (number) ['set']");
             }
 
             int agentNum = args[0].AsInt();
@@ -134,11 +134,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool ScavAgentCommand(string command, Argument[] args, bool quiet, bool force)
+        private static bool ScavAgentCommand(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: scavenger ['clear'/'add'/'on'/'off'/'set']");
+                throw new RunTimeError("Usage: scavenger ['clear'/'add'/'on'/'off'/'set']");
             }
 
             bool clear = false;
@@ -200,7 +200,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool SellAgentCommand(string command, Argument[] args, bool quiet, bool force)
+        private static bool SellAgentCommand(string command, Variable[] args, bool quiet, bool force)
         {
             SellAgent.Instance.SetHotBag();
 

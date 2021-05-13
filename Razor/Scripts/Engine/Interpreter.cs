@@ -26,11 +26,8 @@ namespace Assistant.Scripts.Engine
 {
     public class RunTimeError : Exception
     {
-        public ASTNode Node;
-
-        public RunTimeError(ASTNode node, string error) : base(error)
+        public RunTimeError(string error) : base(error)
         {
-            Node = node;
         }
     }
 
@@ -48,7 +45,7 @@ namespace Assistant.Scripts.Engine
             else if (int.TryParse(token, out val))
                 return val;
 
-            throw new RunTimeError(null, "Cannot convert argument to int");
+            throw new RunTimeError("Cannot convert argument to int");
         }
 
         public static uint ToUInt(string token)
@@ -63,7 +60,7 @@ namespace Assistant.Scripts.Engine
             else if (uint.TryParse(token, out val))
                 return val;
 
-            throw new RunTimeError(null, "Cannot convert argument to uint");
+            throw new RunTimeError("Cannot convert argument to uint");
         }
 
         public static ushort ToUShort(string token)
@@ -78,7 +75,7 @@ namespace Assistant.Scripts.Engine
             else if (ushort.TryParse(token, out val))
                 return val;
 
-            throw new RunTimeError(null, "Cannot convert argument to ushort");
+            throw new RunTimeError("Cannot convert argument to ushort");
         }
 
         public static double ToDouble(string token)
@@ -88,7 +85,7 @@ namespace Assistant.Scripts.Engine
             if (double.TryParse(token, out val))
                 return val;
 
-            throw new RunTimeError(null, "Cannot convert argument to double");
+            throw new RunTimeError("Cannot convert argument to double");
         }
 
         public static bool ToBool(string token)
@@ -98,13 +95,13 @@ namespace Assistant.Scripts.Engine
             if (bool.TryParse(token, out val))
                 return val;
 
-            throw new RunTimeError(null, "Cannot convert argument to bool");
+            throw new RunTimeError("Cannot convert argument to bool");
         }
     }
 
     internal class Scope
     {
-        private Dictionary<string, Argument> _namespace = new Dictionary<string, Argument>();
+        private Dictionary<string, Variable> _namespace = new Dictionary<string, Variable>();
 
         public readonly ASTNode StartNode;
         public readonly Scope Parent;
@@ -115,9 +112,9 @@ namespace Assistant.Scripts.Engine
             StartNode = start;
         }
 
-        public Argument GetVar(string name)
+        public Variable GetVariable(string name)
         {
-            Argument arg;
+            Variable arg;
 
             if (_namespace.TryGetValue(name, out arg))
                 return arg;
@@ -125,83 +122,81 @@ namespace Assistant.Scripts.Engine
             return null;
         }
 
-        public void SetVar(string name, Argument val)
+        public void SetVariable(string name, Variable val)
         {
             _namespace[name] = val;
         }
 
-        public void ClearVar(string name)
+        public void ClearVariable(string name)
         {
             _namespace.Remove(name);
         }
     }
 
-    public class Argument
+    public class Variable
     {
-        private ASTNode _node;
-        private Script _script;
+        private string _value;
 
-        public Argument(Script script, ASTNode node)
+        public Variable(string value)
         {
-            _node = node;
-            _script = script;
+            _value = value;
         }
 
         // Treat the argument as an integer
         public int AsInt()
         {
-            if (_node.Lexeme == null)
-                throw new RunTimeError(_node, "Cannot convert argument to int");
+            if (_value == null)
+                throw new RunTimeError("Cannot convert argument to int");
 
             // Try to resolve it as a scoped variable first
-            var arg = _script.Lookup(_node.Lexeme);
+            var arg = Interpreter.GetVariable(_value);
             if (arg != null)
                 return arg.AsInt();
 
-            return TypeConverter.ToInt(_node.Lexeme);
+            return TypeConverter.ToInt(_value);
         }
 
         // Treat the argument as an unsigned integer
         public uint AsUInt()
         {
-            if (_node.Lexeme == null)
-                throw new RunTimeError(_node, "Cannot convert argument to uint");
+            if (_value == null)
+                throw new RunTimeError("Cannot convert argument to uint");
 
             // Try to resolve it as a scoped variable first
-            var arg = _script.Lookup(_node.Lexeme);
+            var arg = Interpreter.GetVariable(_value);
             if (arg != null)
                 return arg.AsUInt();
 
-            return TypeConverter.ToUInt(_node.Lexeme);
+            return TypeConverter.ToUInt(_value);
         }
 
         public ushort AsUShort()
         {
-            if (_node.Lexeme == null)
-                throw new RunTimeError(_node, "Cannot convert argument to ushort");
+            if (_value == null)
+                throw new RunTimeError("Cannot convert argument to ushort");
 
             // Try to resolve it as a scoped variable first
-            var arg = _script.Lookup(_node.Lexeme);
+            var arg = Interpreter.GetVariable(_value);
             if (arg != null)
                 return arg.AsUShort();
 
-            return TypeConverter.ToUShort(_node.Lexeme);
+            return TypeConverter.ToUShort(_value);
         }
 
         // Treat the argument as a serial or an alias. Aliases will
         // be automatically resolved to serial numbers.
         public uint AsSerial()
         {
-            if (_node.Lexeme == null)
-                throw new RunTimeError(_node, "Cannot convert argument to serial");
+            if (_value == null)
+                throw new RunTimeError("Cannot convert argument to serial");
 
             // Try to resolve it as a scoped variable first
-            var arg = _script.Lookup(_node.Lexeme);
+            var arg = Interpreter.GetVariable(_value);
             if (arg != null)
                 return arg.AsSerial();
 
             // Resolve it as a global alias next
-            uint serial = Interpreter.GetAlias(_node.Lexeme);
+            uint serial = Interpreter.GetAlias(_value);
             if (serial != uint.MaxValue)
                 return serial;
 
@@ -209,25 +204,28 @@ namespace Assistant.Scripts.Engine
         }
 
         // Treat the argument as a string
-        public string AsString()
+        public string AsString(bool resolve = true)
         {
-            if (_node.Lexeme == null)
-                throw new RunTimeError(_node, "Cannot convert argument to string");
+            if (_value == null)
+                throw new RunTimeError("Cannot convert argument to string");
 
-            // Try to resolve it as a scoped variable first
-            var arg = _script.Lookup(_node.Lexeme);
-            if (arg != null)
-                return arg.AsString();
+            if (resolve)
+            {
+                // Try to resolve it as a scoped variable first
+                var arg = Interpreter.GetVariable(_value);
+                if (arg != null)
+                    return arg.AsString();
+            }
 
-            return _node.Lexeme;
+            return _value;
         }
 
         public bool AsBool()
         {
-            if (_node.Lexeme == null)
-                throw new RunTimeError(_node, "Cannot convert argument to bool");
+            if (_value == null)
+                throw new RunTimeError("Cannot convert argument to bool");
 
-            return TypeConverter.ToBool(_node.Lexeme);
+            return TypeConverter.ToBool(_value);
         }
 
         public override bool Equals(object obj)
@@ -235,7 +233,7 @@ namespace Assistant.Scripts.Engine
             if (obj == null)
                 return false;
 
-            Argument arg = obj as Argument;
+            Variable arg = obj as Variable;
 
             if (arg == null)
                 return false;
@@ -243,12 +241,12 @@ namespace Assistant.Scripts.Engine
             return Equals(arg);
         }
 
-        public bool Equals(Argument other)
+        public bool Equals(Variable other)
         {
             if (other == null)
                 return false;
 
-            return (other._node.Lexeme == _node.Lexeme);
+            return (other._value == _value);
         }
     }
 
@@ -256,41 +254,17 @@ namespace Assistant.Scripts.Engine
     {
         private ASTNode _statement;
 
-        // Delegate fires when this script executes a new statement
-        public Action<ASTNode> StatementExecuted;
-
-        private Scope _scope;
-
-        public Argument Lookup(string name)
+        public int CurrentLine
         {
-            var scope = _scope;
-            Argument result = null;
-
-            while (scope != null)
+            get
             {
-                result = scope.GetVar(name);
-                if (result != null)
-                    return result;
-
-                scope = scope.Parent;
+                return _statement == null ? 0 : _statement.LineNumber;
             }
-
-            return result;
         }
 
-        private void PushScope(ASTNode node)
+        private Variable[] ConstructArguments(ref ASTNode node)
         {
-            _scope = new Scope(_scope, node);
-        }
-
-        private void PopScope()
-        {
-            _scope = _scope.Parent;
-        }
-
-        private Argument[] ConstructArguments(ref ASTNode node)
-        {
-            List<Argument> args = new List<Argument>();
+            List<Variable> args = new List<Variable>();
 
             node = node.Next();
 
@@ -306,10 +280,12 @@ namespace Assistant.Scripts.Engine
                     case ASTNodeType.LESS_THAN_OR_EQUAL:
                     case ASTNodeType.GREATER_THAN:
                     case ASTNodeType.GREATER_THAN_OR_EQUAL:
+                    case ASTNodeType.IN:
+                    case ASTNodeType.AS:
                         return args.ToArray();
                 }
 
-                args.Add(new Argument(this, node));
+                args.Add(new Variable(node.Lexeme));
 
                 node = node.Next();
             }
@@ -327,9 +303,11 @@ namespace Assistant.Scripts.Engine
         {
             // Set current to the first statement
             _statement = root.FirstChild();
+        }
 
-            // Create a default scope
-            _scope = new Scope(null, _statement);
+        public void Initialize()
+        {
+            Interpreter.PushScope(_statement);
         }
 
         public bool ExecuteNext()
@@ -338,12 +316,12 @@ namespace Assistant.Scripts.Engine
                 return false;
 
             if (_statement.Type != ASTNodeType.STATEMENT)
-                throw new RunTimeError(_statement, "Invalid script");
+                throw new RunTimeError("Invalid script");
 
             var node = _statement.FirstChild();
 
             if (node == null)
-                throw new RunTimeError(_statement, "Invalid statement");
+                throw new RunTimeError("Invalid statement");
 
             int depth = 0;
 
@@ -351,13 +329,13 @@ namespace Assistant.Scripts.Engine
             {
                 case ASTNodeType.IF:
                     {
-                        PushScope(node);
+                        Interpreter.PushScope(node);
 
                         var expr = node.FirstChild();
                         var result = EvaluateExpression(ref expr);
 
                         // Advance to next statement
-                        _statement = _statement.Next();
+                        Advance();
 
                         // Evaluated true. Jump right into execution.
                         if (result)
@@ -386,7 +364,7 @@ namespace Assistant.Scripts.Engine
                                     // Evaluated true. Jump right into execution
                                     if (result)
                                     {
-                                        _statement = _statement.Next();
+                                        Advance();
                                         break;
                                     }
                                 }
@@ -396,7 +374,7 @@ namespace Assistant.Scripts.Engine
                                 if (depth == 0)
                                 {
                                     // Jump into the else clause
-                                    _statement = _statement.Next();
+                                    Advance();
                                     break;
                                 }
                             }
@@ -408,11 +386,11 @@ namespace Assistant.Scripts.Engine
                                 depth--;
                             }
 
-                            _statement = _statement.Next();
+                            Advance();
                         }
 
                         if (_statement == null)
-                            throw new RunTimeError(node, "If with no matching endif");
+                            throw new RunTimeError("If with no matching endif");
 
                         break;
                     }
@@ -437,16 +415,16 @@ namespace Assistant.Scripts.Engine
                             depth--;
                         }
 
-                        _statement = _statement.Next();
+                        Advance();
                     }
 
                     if (_statement == null)
-                        throw new RunTimeError(node, "If with no matching endif");
+                        throw new RunTimeError("If with no matching endif");
 
                     break;
                 case ASTNodeType.ENDIF:
-                    PopScope();
-                    _statement = _statement.Next();
+                    Interpreter.PopScope();
+                    Advance();
                     break;
                 case ASTNodeType.ELSE:
                     // If we hit the else statement during normal advancing, skip over it. The only way
@@ -469,26 +447,26 @@ namespace Assistant.Scripts.Engine
                             depth--;
                         }
 
-                        _statement = _statement.Next();
+                        Advance();
                     }
 
                     if (_statement == null)
-                        throw new RunTimeError(node, "If with no matching endif");
+                        throw new RunTimeError("If with no matching endif");
 
                     break;
                 case ASTNodeType.WHILE:
                     {
                         // When we first enter the loop, push a new scope
-                        if (_scope.StartNode != node)
+                        if (Interpreter.CurrentScope.StartNode != node)
                         {
-                            PushScope(node);
+                            Interpreter.PushScope(node);
                         }
 
                         var expr = node.FirstChild();
                         var result = EvaluateExpression(ref expr);
 
                         // Advance to next statement
-                        _statement = _statement.Next();
+                        Advance();
 
                         // The expression evaluated false, so keep advancing until
                         // we hit an endwhile statement.
@@ -508,16 +486,16 @@ namespace Assistant.Scripts.Engine
                                 {
                                     if (depth == 0)
                                     {
-                                        PopScope();
+                                        Interpreter.PopScope();
                                         // Go one past the endwhile so the loop doesn't repeat
-                                        _statement = _statement.Next();
+                                        Advance();
                                         break;
                                     }
 
                                     depth--;
                                 }
 
-                                _statement = _statement.Next();
+                                Advance();
                             }
                         }
                         break;
@@ -548,7 +526,7 @@ namespace Assistant.Scripts.Engine
                     }
 
                     if (_statement == null)
-                        throw new RunTimeError(node, "Unexpected endwhile");
+                        throw new RunTimeError("Unexpected endwhile");
 
                     break;
                 case ASTNodeType.FOR:
@@ -557,47 +535,42 @@ namespace Assistant.Scripts.Engine
                         var iterName = node.GetHashCode().ToString();
 
                         // When we first enter the loop, push a new scope
-                        if (_scope.StartNode != node)
+                        if (Interpreter.CurrentScope.StartNode != node)
                         {
-                            PushScope(node);
+                            Interpreter.PushScope(node);
 
                             // Grab the arguments
                             var max = node.FirstChild();
 
                             if (max.Type != ASTNodeType.INTEGER)
-                                throw new RunTimeError(max, "Invalid for loop syntax");
+                                throw new RunTimeError("Invalid for loop syntax");
 
                             // Create a dummy argument that acts as our loop variable
-                            var iter = new ASTNode(ASTNodeType.INTEGER, "0", node, 0);
-
-                            _scope.SetVar(iterName, new Argument(this, iter));
+                            Interpreter.SetVariable(iterName, "0");
                         }
                         else
                         {
                             // Increment the iterator argument
-                            var arg = _scope.GetVar(iterName);
-
-                            var iter = new ASTNode(ASTNodeType.INTEGER, (arg.AsUInt() + 1).ToString(), node, 0);
-
-                            _scope.SetVar(iterName, new Argument(this, iter));
+                            var arg = Interpreter.GetVariable(iterName);
+                            Interpreter.SetVariable(iterName, (arg.AsUInt() + 1).ToString());
                         }
 
                         // Check loop condition
-                        var i = _scope.GetVar(iterName);
+                        var i = Interpreter.GetVariable(iterName);
 
                         // Grab the max value to iterate to
                         node = node.FirstChild();
-                        var end = new Argument(this, node);
+                        var end = new Variable(node.Lexeme);
 
                         if (i.AsUInt() < end.AsUInt())
                         {
                             // enter the loop
-                            _statement = _statement.Next();
+                            Advance();
                         }
                         else
                         {
                             // Walk until the end of the loop
-                            _statement = _statement.Next();
+                            Advance();
 
                             depth = 0;
 
@@ -605,7 +578,8 @@ namespace Assistant.Scripts.Engine
                             {
                                 node = _statement.FirstChild();
 
-                                if (node.Type == ASTNodeType.FOR)
+                                if (node.Type == ASTNodeType.FOR ||
+                                    node.Type == ASTNodeType.FOREACH)
                                 {
                                     depth++;
                                 }
@@ -613,20 +587,101 @@ namespace Assistant.Scripts.Engine
                                 {
                                     if (depth == 0)
                                     {
-                                        PopScope();
+                                        Interpreter.PopScope();
                                         // Go one past the end so the loop doesn't repeat
-                                        _statement = _statement.Next();
+                                        Advance();
                                         break;
                                     }
 
                                     depth--;
                                 }
 
-                                _statement = _statement.Next();
+                                Advance();
                             }
                         }
                     }
                     break;
+                case ASTNodeType.FOREACH:
+                    {
+                        // foreach VAR in LIST
+                        // The iterator's name is the hash code of the for loop's ASTNode.
+                        var varName = node.FirstChild().Lexeme;
+                        var listName = node.FirstChild().Next().Lexeme;
+                        var iterName = node.GetHashCode().ToString();
+
+                        // When we first enter the loop, push a new scope
+                        if (Interpreter.CurrentScope.StartNode != node)
+                        {
+                            Interpreter.PushScope(node);
+
+                            // Create a dummy argument that acts as our iterator object
+                            Interpreter.SetVariable(iterName, "0");
+
+                            // Make the user-chosen variable have the value for the front of the list
+                            var arg = Interpreter.GetListValue(listName, 0);
+
+                            if (arg != null)
+                                Interpreter.SetVariable(varName, arg.AsString());
+                            else
+                                Interpreter.ClearVariable(varName);
+                        }
+                        else
+                        {
+                            // Increment the iterator argument
+                            var idx = Interpreter.GetVariable(iterName).AsInt() + 1;
+                            Interpreter.SetVariable(iterName, idx.ToString());
+
+                            // Update the user-chosen variable
+                            var arg = Interpreter.GetListValue(listName, idx);
+
+                            if (arg != null)
+                                Interpreter.SetVariable(varName, arg.AsString());
+                            else
+                                Interpreter.ClearVariable(varName);
+                        }
+
+                        // Check loop condition
+                        var i = Interpreter.GetVariable(varName);
+
+                        if (i != null)
+                        {
+                            // enter the loop
+                            Advance();
+                        }
+                        else
+                        {
+                            // Walk until the end of the loop
+                            Advance();
+
+                            depth = 0;
+
+                            while (_statement != null)
+                            {
+                                node = _statement.FirstChild();
+
+                                if (node.Type == ASTNodeType.FOR ||
+                                    node.Type == ASTNodeType.FOREACH)
+                                {
+                                    depth++;
+                                }
+                                else if (node.Type == ASTNodeType.ENDFOR)
+                                {
+                                    if (depth == 0)
+                                    {
+                                        Interpreter.PopScope();
+                                        // Go one past the end so the loop doesn't repeat
+                                        Advance();
+                                        break;
+                                    }
+
+                                    depth--;
+                                }
+
+                                Advance();
+                            }
+                        }
+                        break;
+                    }
                 case ASTNodeType.ENDFOR:
                     // Walk backward to the for statement
                     _statement = _statement.Prev();
@@ -642,7 +697,8 @@ namespace Assistant.Scripts.Engine
                         {
                             depth++;
                         }
-                        else if (node.Type == ASTNodeType.FOR)
+                        else if (node.Type == ASTNodeType.FOR ||
+                                 node.Type == ASTNodeType.FOREACH)
                         {
                             if (depth == 0)
                             {
@@ -655,12 +711,12 @@ namespace Assistant.Scripts.Engine
                     }
 
                     if (_statement == null)
-                        throw new RunTimeError(node, "Unexpected endfor");
+                        throw new RunTimeError("Unexpected endfor");
 
                     break;
                 case ASTNodeType.BREAK:
                     // Walk until the end of the loop
-                    _statement = _statement.Next();
+                    Advance();
 
                     depth = 0;
 
@@ -669,7 +725,8 @@ namespace Assistant.Scripts.Engine
                         node = _statement.FirstChild();
 
                         if (node.Type == ASTNodeType.WHILE ||
-                            node.Type == ASTNodeType.FOR)
+                            node.Type == ASTNodeType.FOR ||
+                            node.Type == ASTNodeType.FOREACH)
                         {
                             depth++;
                         }
@@ -679,17 +736,17 @@ namespace Assistant.Scripts.Engine
                             if (depth == 0)
                             {
                                 // Go one past the end so the loop doesn't repeat
-                                _statement = _statement.Next();
+                                Advance();
                                 break;
                             }
 
                             depth--;
                         }
 
-                        _statement = _statement.Next();
+                        Advance();
                     }
 
-                    PopScope();
+                    Interpreter.PopScope();
                     break;
                 case ASTNodeType.CONTINUE:
                     // Walk backward to the loop statement
@@ -707,7 +764,8 @@ namespace Assistant.Scripts.Engine
                             depth++;
                         }
                         else if (node.Type == ASTNodeType.WHILE ||
-                                 node.Type == ASTNodeType.FOR)
+                                 node.Type == ASTNodeType.FOR ||
+                                 node.Type == ASTNodeType.FOREACH)
                         {
                             if (depth == 0)
                                 break;
@@ -719,7 +777,7 @@ namespace Assistant.Scripts.Engine
                     }
 
                     if (_statement == null)
-                        throw new RunTimeError(node, "Unexpected continue");
+                        throw new RunTimeError("Unexpected continue");
                     break;
                 case ASTNodeType.STOP:
                     _statement = null;
@@ -731,7 +789,7 @@ namespace Assistant.Scripts.Engine
                 case ASTNodeType.FORCE:
                 case ASTNodeType.COMMAND:
                     if (ExecuteCommand(node))
-                        _statement = _statement.Next();
+                        Advance();
 
                     break;
             }
@@ -739,7 +797,11 @@ namespace Assistant.Scripts.Engine
             return (_statement != null) ? true : false;
         }
 
-        public void Advance() { _statement = _statement.Next(); }
+        public void Advance()
+        {
+            Interpreter.ClearTimeout();
+            _statement = _statement.Next();
+        }
 
         private ASTNode EvaluateModifiers(ASTNode node, out bool quiet, out bool force, out bool not)
         {
@@ -770,34 +832,30 @@ namespace Assistant.Scripts.Engine
 
         private bool ExecuteCommand(ASTNode node)
         {
-            StatementExecuted.Invoke(node);
-
             node = EvaluateModifiers(node, out bool quiet, out bool force, out _);
 
             var handler = Interpreter.GetCommandHandler(node.Lexeme);
 
             if (handler == null)
-                throw new RunTimeError(node, "Unknown command");
+                throw new RunTimeError("Unknown command");
 
             var cont = handler(node.Lexeme, ConstructArguments(ref node), quiet, force);
 
             if (node != null)
-                throw new RunTimeError(node, "Command did not consume all available arguments");
+                throw new RunTimeError("Command did not consume all available arguments");
 
             return cont;
         }
 
         private bool EvaluateExpression(ref ASTNode expr)
         {
-            StatementExecuted.Invoke(expr);
-
             if (expr == null || (expr.Type != ASTNodeType.UNARY_EXPRESSION && expr.Type != ASTNodeType.BINARY_EXPRESSION && expr.Type != ASTNodeType.LOGICAL_EXPRESSION))
-                throw new RunTimeError(expr, "No expression following control statement");
+                throw new RunTimeError("No expression following control statement");
 
             var node = expr.FirstChild();
 
             if (node == null)
-                throw new RunTimeError(expr, "Empty expression following control statement");
+                throw new RunTimeError("Empty expression following control statement");
 
             switch (expr.Type)
             {
@@ -818,7 +876,7 @@ namespace Assistant.Scripts.Engine
                 node = node.Next();
 
                 if (node == null)
-                    throw new RunTimeError(node, "Invalid logical expression");
+                    throw new RunTimeError("Invalid logical expression");
 
                 bool rhs;
 
@@ -833,7 +891,7 @@ namespace Assistant.Scripts.Engine
                         rhs = EvaluateBinaryExpression(ref e);
                         break;
                     default:
-                        throw new RunTimeError(node, "Nested logical expressions are not possible");
+                        throw new RunTimeError("Nested logical expressions are not possible");
                 }
 
                 switch (op)
@@ -845,7 +903,7 @@ namespace Assistant.Scripts.Engine
                         lhs = lhs || rhs;
                         break;
                     default:
-                        throw new RunTimeError(node, "Invalid logical operator");
+                        throw new RunTimeError("Invalid logical operator");
                 }
 
                 node = node.Next();
@@ -854,44 +912,41 @@ namespace Assistant.Scripts.Engine
             return lhs;
         }
 
-        private bool EvaluateUnaryExpression(ref ASTNode node)
+        private bool CompareOperands(ASTNodeType op, IComparable lhs, IComparable rhs)
         {
-            node = EvaluateModifiers(node, out bool quiet, out _, out bool not);
+            if (op == ASTNodeType.IN)
+            {
+                if (lhs.GetType() != typeof(string) || rhs.GetType() != typeof(string))
+                {
+                    throw new RunTimeError("The 'in' operator only works on string operands.");
+                }
+            }
+            else if (op == ASTNodeType.AS)
+            {
+                if (lhs.GetType() != typeof(uint))
+                {
+                    throw new RunTimeError("The left hand side of an 'as' expression must evaluate to a serial");
+                }
 
-            var handler = Interpreter.GetExpressionHandler(node.Lexeme);
-
-            if (handler == null)
-                throw new RunTimeError(node, "Unknown expression");
-
-            var result = handler(node.Lexeme, ConstructArguments(ref node), quiet);
-
-            if (not)
-                return result.CompareTo(true) != 0;
-            else
-                return result.CompareTo(true) == 0;
-        }
-
-        private bool EvaluateBinaryExpression(ref ASTNode node)
-        {
-            // Evaluate the left hand side
-            var lhs = EvaluateBinaryOperand(ref node);
-
-            // Capture the operator
-            var op = node.Type;
-            node = node.Next();
-
-            // Evaluate the right hand side
-            var rhs = EvaluateBinaryOperand(ref node);
-
-            if (lhs.GetType() != rhs.GetType())
+                if (rhs.GetType() != typeof(string))
+                {
+                    throw new RunTimeError("The right hand side of an 'as' expression must evaluate to a string");
+                }
+            }
+            else if (lhs.GetType() != rhs.GetType())
             {
                 // Different types. Try to convert one to match the other.
 
-                // Special case for rhs doubles because we don't want to lose precision.
                 if (rhs is double)
                 {
-                    double tmp = (double)lhs;
-                    lhs = tmp;
+                    // Special case for rhs doubles because we don't want to lose precision.
+                    lhs = (double)lhs;
+                }
+                else if (rhs is bool)
+                {
+                    // Special case for rhs bools because we want to down-convert the lhs.
+                    var tmp = Convert.ChangeType(lhs, typeof(bool));
+                    lhs = (IComparable)tmp;
                 }
                 else
                 {
@@ -917,14 +972,52 @@ namespace Assistant.Scripts.Engine
                         return lhs.CompareTo(rhs) > 0;
                     case ASTNodeType.GREATER_THAN_OR_EQUAL:
                         return lhs.CompareTo(rhs) >= 0;
+                    case ASTNodeType.IN:
+                        return ((string)rhs).Contains((string)lhs);
+                    case ASTNodeType.AS:
+                        Interpreter.SetVariable(rhs.ToString(), lhs.ToString());
+                        return CompareOperands(ASTNodeType.EQUAL, lhs, true);
                 }
             }
             catch (ArgumentException e)
             {
-                throw new RunTimeError(node, e.Message);
+                throw new RunTimeError(e.Message);
             }
 
-            throw new RunTimeError(node, "Unknown operator in expression");
+            throw new RunTimeError("Unknown operator in expression");
+
+        }
+
+        private bool EvaluateUnaryExpression(ref ASTNode node)
+        {
+            node = EvaluateModifiers(node, out bool quiet, out _, out bool not);
+
+            var handler = Interpreter.GetExpressionHandler(node.Lexeme);
+
+            if (handler == null)
+                throw new RunTimeError("Unknown expression");
+
+            var result = handler(node.Lexeme, ConstructArguments(ref node), quiet);
+
+            if (not)
+                return CompareOperands(ASTNodeType.EQUAL, result, false);
+            else
+                return CompareOperands(ASTNodeType.EQUAL, result, true);
+        }
+
+        private bool EvaluateBinaryExpression(ref ASTNode node)
+        {
+            // Evaluate the left hand side
+            var lhs = EvaluateBinaryOperand(ref node);
+
+            // Capture the operator
+            var op = node.Type;
+            node = node.Next();
+
+            // Evaluate the right hand side
+            var rhs = EvaluateBinaryOperand(ref node);
+
+            return CompareOperands(op, lhs, rhs);
         }
 
         private IComparable EvaluateBinaryOperand(ref ASTNode node)
@@ -936,34 +1029,48 @@ namespace Assistant.Scripts.Engine
             {
                 case ASTNodeType.INTEGER:
                     val = TypeConverter.ToInt(node.Lexeme);
+                    node = node.Next();
                     break;
                 case ASTNodeType.SERIAL:
                     val = TypeConverter.ToUInt(node.Lexeme);
+                    node = node.Next();
                     break;
                 case ASTNodeType.STRING:
                     val = node.Lexeme;
+                    node = node.Next();
                     break;
                 case ASTNodeType.DOUBLE:
                     val = TypeConverter.ToDouble(node.Lexeme);
+                    node = node.Next();
                     break;
                 case ASTNodeType.OPERAND:
                     {
                         // This might be a registered keyword, so do a lookup
                         var handler = Interpreter.GetExpressionHandler(node.Lexeme);
 
-                        if (handler == null)
-                        {
-                            // It's just a string
-                            val = node.Lexeme;
-                        }
-                        else
+                        if (handler != null)
                         {
                             val = handler(node.Lexeme, ConstructArguments(ref node), quiet);
+                            break;
                         }
+
+                        // It could be a variable
+                        var arg = Interpreter.GetVariable(node.Lexeme);
+                        if (arg != null)
+                        {
+                            // TODO: Should really look at the type of arg here
+                            val = arg.AsString();
+                            node = node.Next();
+                            break;
+                        }
+
+                        // It's just a string
+                        val = node.Lexeme;
+                        node = node.Next();
                         break;
                     }
                 default:
-                    throw new RunTimeError(node, "Invalid type found in expression");
+                    throw new RunTimeError("Invalid type found in expression");
             }
 
             return val;
@@ -972,16 +1079,25 @@ namespace Assistant.Scripts.Engine
 
     public static class Interpreter
     {
-        // Aliases only hold serial numbers
-        private static Dictionary<string, uint> _aliases = new Dictionary<string, uint>();
+        // The "global" scope
+        private static Scope _scope = new Scope(null, null);
+
+        // The current scope
+        private static Scope _currentScope = _scope;
+
+        // Lists
+        private static Dictionary<string, List<Variable>> _lists = new Dictionary<string, List<Variable>>();
+
+        // Timers
+        private static Dictionary<string, DateTime> _timers = new Dictionary<string, DateTime>();
 
         // Expressions
-        public delegate IComparable ExpressionHandler(string expression, Argument[] args, bool quiet);
-        public delegate T ExpressionHandler<T>(string expression, Argument[] args, bool quiet) where T : IComparable;
+        public delegate IComparable ExpressionHandler(string expression, Variable[] args, bool quiet);
+        public delegate T ExpressionHandler<T>(string expression, Variable[] args, bool quiet) where T : IComparable;
 
         private static Dictionary<string, ExpressionHandler> _exprHandlers = new Dictionary<string, ExpressionHandler>();
 
-        public delegate bool CommandHandler(string command, Argument[] args, bool quiet, bool force);
+        public delegate bool CommandHandler(string command, Variable[] args, bool quiet, bool force);
 
         private static Dictionary<string, CommandHandler> _commandHandlers = new Dictionary<string, CommandHandler>();
 
@@ -991,7 +1107,13 @@ namespace Assistant.Scripts.Engine
 
         private static Script _activeScript = null;
 
-        public static Action<ASTNode> ActiveScriptStatementExecuted;
+        public static int CurrentLine
+        {
+            get
+            {
+                return _activeScript == null ? 0 : _activeScript.CurrentLine;
+            }
+        }
 
         private enum ExecutionState
         {
@@ -1006,7 +1128,7 @@ namespace Assistant.Scripts.Engine
         private static long _pauseTimeout = long.MaxValue;
         private static TimeoutCallback _timeoutCallback = null;
 
-        public static CultureInfo Culture;
+        internal static CultureInfo Culture;
 
         static Interpreter()
         {
@@ -1049,37 +1171,193 @@ namespace Assistant.Scripts.Engine
             _aliasHandlers.Remove(keyword);
         }
 
+        public static void PushScope(ASTNode node)
+        {
+            _currentScope = new Scope(_currentScope, node);
+        }
+
+        public static void PopScope()
+        {
+            if (_currentScope == _scope)
+                throw new RunTimeError("Attempted to remove global scope");
+
+            _currentScope = _currentScope.Parent;
+        }
+
+        internal static Scope CurrentScope => _currentScope;
+
+        public static void SetVariable(string name, string value, bool global = false)
+        {
+            Scope scope = global ? _scope : _currentScope;
+
+            scope.SetVariable(name, new Variable(value));
+        }
+
+        public static Variable GetVariable(string name)
+        {
+            var scope = _currentScope;
+            Variable result = null;
+
+            while (scope != null)
+            {
+                result = scope.GetVariable(name);
+                if (result != null)
+                    return result;
+
+                scope = scope.Parent;
+            }
+
+            return result;
+        }
+
+        public static void ClearVariable(string name)
+        {
+            _currentScope.ClearVariable(name);
+        }
+
         public static uint GetAlias(string alias)
         {
             // If a handler is explicitly registered, call that.
             if (_aliasHandlers.TryGetValue(alias, out AliasHandler handler))
                 return handler(alias);
 
-            uint value;
-            if (_aliases.TryGetValue(alias, out value))
-                return value;
+            var arg = GetVariable(alias);
 
-            return uint.MaxValue;
+            if (arg == null)
+                return uint.MaxValue;
+
+            return arg.AsUInt();
         }
 
         public static void SetAlias(string alias, uint serial)
         {
-            _aliases[alias] = serial;
+            SetVariable(alias, serial.ToString(), true);
         }
 
-        private static void SetActiveScript(Script script)
+        public static void ClearAlias(string alias)
         {
-            if (script != null)
-            {
-                script.StatementExecuted += ActiveScriptStatementExecuted;
-            }
+            _scope.ClearVariable(alias);
+        }
 
-            if (_activeScript != null)
-            {
-                _activeScript.StatementExecuted -= ActiveScriptStatementExecuted;
-            }
+        public static void CreateList(string name)
+        {
+            if (_lists.ContainsKey(name))
+                return;
 
-            _activeScript = script;
+            _lists[name] = new List<Variable>();
+        }
+
+        public static void DestroyList(string name)
+        {
+            _lists.Remove(name);
+        }
+
+        public static void ClearList(string name)
+        {
+            if (!_lists.ContainsKey(name))
+                return;
+
+            _lists[name].Clear();
+        }
+
+        public static bool ListExists(string name)
+        {
+            return _lists.ContainsKey(name);
+        }
+
+        public static bool ListContains(string name, Variable arg)
+        {
+            if (!_lists.ContainsKey(name))
+                throw new RunTimeError("List does not exist");
+
+            return _lists[name].Contains(arg);
+        }
+
+        public static int ListLength(string name)
+        {
+            if (!_lists.ContainsKey(name))
+                throw new RunTimeError("List does not exist");
+
+            return _lists[name].Count;
+        }
+
+        public static void PushList(string name, Variable arg, bool front, bool unique)
+        {
+            if (!_lists.ContainsKey(name))
+                throw new RunTimeError("List does not exist");
+
+            if (unique && _lists[name].Contains(arg))
+                return;
+
+            if (front)
+                _lists[name].Insert(0, arg);
+            else
+                _lists[name].Add(arg);
+        }
+
+        public static bool PopList(string name, Variable arg)
+        {
+            if (!_lists.ContainsKey(name))
+                throw new RunTimeError("List does not exist");
+
+            return _lists[name].Remove(arg);
+        }
+
+        public static bool PopList(string name, bool front)
+        {
+            if (!_lists.ContainsKey(name))
+                throw new RunTimeError("List does not exist");
+
+            var idx = front ? 0 : _lists[name].Count - 1;
+
+            _lists[name].RemoveAt(idx);
+
+            return _lists[name].Count > 0;
+        }
+
+        public static Variable GetListValue(string name, int idx)
+        {
+            if (!_lists.ContainsKey(name))
+                throw new RunTimeError("List does not exist");
+
+            var list = _lists[name];
+
+            if (idx < list.Count)
+                return list[idx];
+
+            return null;
+        }
+
+        public static void CreateTimer(string name)
+        {
+            _timers[name] = DateTime.UtcNow;
+        }
+
+        public static TimeSpan GetTimer(string name)
+        {
+            if (!_timers.TryGetValue(name, out DateTime timestamp))
+                throw new RunTimeError("Timer does not exist");
+
+            TimeSpan elapsed = DateTime.UtcNow - timestamp;
+
+            return elapsed;
+        }
+
+        public static void SetTimer(string name, int elapsed)
+        {
+            // Setting a timer to start at a given value is equivalent to
+            // starting the timer that number of milliseconds in the past.
+            _timers[name] = DateTime.UtcNow.AddMilliseconds(-elapsed);
+        }
+
+        public static void RemoveTimer(string name)
+        {
+            _timers.Remove(name);
+        }
+
+        public static bool TimerExists(string name)
+        {
+            return _timers.ContainsKey(name);
         }
 
         public static bool StartScript(Script script)
@@ -1087,7 +1365,9 @@ namespace Assistant.Scripts.Engine
             if (_activeScript != null)
                 return false;
 
-            SetActiveScript(script);
+            _currentScope = _scope;
+            _activeScript = script;
+            _activeScript.Initialize();
             _executionState = ExecutionState.RUNNING;
 
             ExecuteScript();
@@ -1097,7 +1377,8 @@ namespace Assistant.Scripts.Engine
 
         public static void StopScript()
         {
-            SetActiveScript(null);
+            _activeScript = null;
+            _currentScope = _scope;
             _executionState = ExecutionState.RUNNING;
         }
 
@@ -1133,7 +1414,7 @@ namespace Assistant.Scripts.Engine
                      */
                     if (_executionState != ExecutionState.RUNNING)
                     {
-                        SetActiveScript(null);
+                        _activeScript = null;
                         return false;
                     }
                 }
@@ -1141,7 +1422,7 @@ namespace Assistant.Scripts.Engine
 
             if (!_activeScript.ExecuteNext())
             {
-                SetActiveScript(null);
+                _activeScript = null;
                 return false;
             }
 
@@ -1186,6 +1467,9 @@ namespace Assistant.Scripts.Engine
         // called any time the script advances a statement.
         public static void ClearTimeout()
         {
+            if (_executionState != ExecutionState.TIMING_OUT)
+                return;
+
             _pauseTimeout = 0;
             _executionState = ExecutionState.RUNNING;
         }

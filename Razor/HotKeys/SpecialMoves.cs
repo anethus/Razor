@@ -198,13 +198,13 @@ namespace Assistant
             Client.Instance.SendToServer(new SetWarMode(!World.Player.Warmode));
         }
 
-        private static void ToggleWar()
+        public static void ToggleWar()
         {
             Client.Instance.ForceSendToClient(new SetWarMode(true));
             Client.Instance.SendToServer(new SetWarMode(true));
         }
 
-        private static void TogglePeace()
+        public static void TogglePeace()
         {
             Client.Instance.ForceSendToClient(new SetWarMode(false));
             Client.Instance.SendToServer(new SetWarMode(false));
