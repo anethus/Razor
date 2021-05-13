@@ -21,6 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Assistant.Scripts.Engine
 {
@@ -55,6 +56,7 @@ namespace Assistant.Scripts.Engine
         WHILE,
         ENDWHILE,
         FOR,
+        FOREACH,
         ENDFOR,
         BREAK,
         CONTINUE,
@@ -68,6 +70,8 @@ namespace Assistant.Scripts.Engine
         LESS_THAN_OR_EQUAL,
         GREATER_THAN,
         GREATER_THAN_OR_EQUAL,
+        IN,
+        AS,
 
         // Logical Operators
         NOT,
@@ -79,6 +83,7 @@ namespace Assistant.Scripts.Engine
         SERIAL,
         INTEGER,
         DOUBLE,
+        LIST,
 
         // Modifiers
         QUIET, // @ symbol
@@ -241,7 +246,6 @@ namespace Assistant.Scripts.Engine
         }
 
         private static TextParser _tfp = new TextParser("", new char[] { ' ' }, new char[] { }, new char[] { '\'', '\'', '"', '"' });
-
         private static void ParseLine(ASTNode node, string line)
         {
             line = line.Trim();
@@ -342,6 +346,12 @@ namespace Assistant.Scripts.Engine
                 case ">=":
                     node.Push(ASTNodeType.GREATER_THAN_OR_EQUAL, null, _curLine);
                     break;
+                case "in":
+                    node.Push(ASTNodeType.IN, null, _curLine);
+                    break;
+                case "as":
+                    node.Push(ASTNodeType.AS, null, _curLine);
+                    break;
                 default:
                     throw new SyntaxError(node, "Invalid operator in binary expression");
             }
@@ -413,6 +423,14 @@ namespace Assistant.Scripts.Engine
                         ParseForLoop(statement, lexemes.Slice(1, lexemes.Length - 1));
                         break;
                     }
+                case "foreach":
+                    {
+                        if (lexemes.Length != 4)
+                            throw new SyntaxError(node, "Script compilation error");
+
+                        ParseForEachLoop(statement, lexemes.Slice(1, lexemes.Length - 1));
+                        break;
+                    }
                 case "endfor":
                     if (lexemes.Length > 1)
                         throw new SyntaxError(node, "Script compilation error");
@@ -468,6 +486,8 @@ namespace Assistant.Scripts.Engine
                 case "<=":
                 case ">":
                 case ">=":
+                case "in":
+                case "as":
                     return true;
             }
 
@@ -616,10 +636,31 @@ namespace Assistant.Scripts.Engine
                 ParseValue(loop, lexemes[0], ASTNodeType.STRING);
 
             }
+            else if (lexemes.Length == 3 && lexemes[1] == "to")
+            {
+                // for X to LIST
+                var loop = statement.Push(ASTNodeType.FOREACH, null, _curLine);
+
+                loop.Push(ASTNodeType.STRING, lexemes[2], _curLine);
+                loop.Push(ASTNodeType.LIST, lexemes[2].Substring(0, lexemes[2].Length - 2), _curLine);
+            }
             else
             {
                 throw new SyntaxError(statement, "Invalid for loop");
             }
+        }
+
+        private static void ParseForEachLoop(ASTNode statement, string[] lexemes)
+        {
+            // foreach X in LIST
+            var loop = statement.Push(ASTNodeType.FOREACH, null, _curLine);
+
+            if (lexemes[1] != "in")
+                throw new SyntaxError(statement, "Invalid foreach loop");
+
+            // This is the iterator name
+            ParseValue(loop, lexemes[0], ASTNodeType.STRING);
+            loop.Push(ASTNodeType.LIST, lexemes[2], _curLine);
         }
     }
 }

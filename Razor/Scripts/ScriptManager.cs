@@ -43,8 +43,6 @@ namespace Assistant.Scripts
         public static DateTime LastWalk { get; set; }
 
         public static bool SetLastTargetActive { get; set; }
-
-        public static bool SetVariableActive { get; set; }
         
         public static bool TargetFound { get; set; }
 
@@ -113,12 +111,14 @@ namespace Assistant.Scripts
                         var script = _queuedScript;
 
                         running = Interpreter.StartScript(script);
+                        UpdateLineNumber(Interpreter.CurrentLine);
 
                         _queuedScript = null;
                     }
                     else
                     {
                         running = Interpreter.ExecuteScript();
+                        UpdateLineNumber(Interpreter.CurrentLine);
                     }
 
 
@@ -149,24 +149,12 @@ namespace Assistant.Scripts
                         }
                     }
                 }
-                catch (RunTimeError ex)
-                {
-                    if (ex.Node != null)
-                    {
-                        World.Player?.SendMessage(MsgLevel.Error, $"Script Error: {ex.Message} (Line: {ex.Node.LineNumber + 1})");
-
-                        SetHighlightLine(ex.Node.LineNumber, HighlightType.Error);
-                    }
-                    else
-                    {
-                        World.Player?.SendMessage(MsgLevel.Error, $"Script Error: {ex.Message}");
-                    }
-
-                    StopScript();
-                }
                 catch (Exception ex)
                 {
-                    World.Player?.SendMessage(MsgLevel.Error, $"Script Error: {ex.Message}");
+                    World.Player?.SendMessage(MsgLevel.Error, $"Script Error: {ex.Message} (Line: {Interpreter.CurrentLine + 1})");
+
+                    SetHighlightLine(Interpreter.CurrentLine, HighlightType.Error);
+
                     StopScript();
                 }
             }
@@ -184,8 +172,6 @@ namespace Assistant.Scripts
             _scriptList = new List<RazorScript>();
 
             Recurse(null, Config.GetUserDirectory("Scripts"));
-
-            Interpreter.ActiveScriptStatementExecuted += ActiveScriptStatementExecuted;
 
             foreach (HighlightType type in GetHighlightTypes())
             {
@@ -349,7 +335,6 @@ namespace Assistant.Scripts
             StopScript(); // be sure nothing is running
 
             SetLastTargetActive = false;
-            SetVariableActive = false;
 
             if (_queuedScript != null)
                 return;
@@ -365,12 +350,10 @@ namespace Assistant.Scripts
             _queuedScript = script;
         }
 
-        private static void ActiveScriptStatementExecuted(ASTNode statement)
+        private static void UpdateLineNumber(int lineNum)
         {
-            if (statement != null && PopoutEditor)
+            if (PopoutEditor)
             {
-                var lineNum = statement.LineNumber;
-
                 SetHighlightLine(lineNum, HighlightType.Execution);
                 // Scrolls to relevant line, per this suggestion: https://github.com/PavelTorgashov/FastColoredTextBox/issues/115
                 ScriptEditor.Selection.Start = new Place(0, lineNum);
@@ -424,6 +407,8 @@ namespace Assistant.Scripts
             Aliases.Register();
             Expressions.Register();
 
+            Outlands.Register();
+
             Timer.Start();
         }
 
@@ -449,9 +434,9 @@ namespace Assistant.Scripts
                 s.BeginUpdate();
                 s.Items.Clear();
 
-                foreach (ScriptVariables.ScriptVariable at in ScriptVariables.ScriptVariableList)
+                foreach (var kv in ScriptVariables.Variables)
                 {
-                    s.Items.Add($"'{at.Name}' ({at.TargetInfo.Serial})");
+                    s.Items.Add($"{kv.Key} ({kv.Value})");
                 }
 
                 s.EndUpdate();
@@ -587,7 +572,8 @@ namespace Assistant.Scripts
             string[] keywords =
             {
                     "if", "elseif", "else", "endif", "while", "endwhile", "for", "endfor", "break", "continue", "stop",
-                    "replay", "not", "and", "or"
+                    "replay", "not", "and", "or",
+                    "foreach", "as", "in"
                 };
 
             #endregion
@@ -602,7 +588,9 @@ namespace Assistant.Scripts
                     "setlasttarget",
                     "setvar", "skill", "sysmsg", "target", "targettype", "targetrelloc", "undress", "useonce", "walk",
                     "wait", "pause", "waitforgump", "waitformenu", "waitforprompt", "waitfortarget", "clearsysmsg", "clearjournal",
-                    "waitforsysmsg", "clearhands", "clearall", "virtue", "random"
+                    "waitforsysmsg", "clearhands", "clearall", "virtue", "random",
+                    "warmode", "getlabel", "createlist", "clearlist", "removelist", "pushlist", "poplist", "createtimer", "removetimer", "settimer",
+                    "unsetvar"
 
                 };
 
@@ -771,9 +759,11 @@ namespace Assistant.Scripts
                 "overhead 'set last target'\n\tsetlasttarget\n\toverhead 'set!'\n\tcast 'magic arrow'\n\twaitfortarget\n\ttarget 'last'");
             descriptionCommands.Add("setlasttarget", tooltip);
 
-            tooltip = new ToolTipDescriptions("setvar", new[] { "setvar ('variable') or setvariable ('variable')" },
+            tooltip = new ToolTipDescriptions("setvar", new[] { "setvar ('variable') ['name'] or setvariable ('variable') ['serial']" },
                 "N/A",
-                "This command will pause the script until you select a target to be assigned a variable.\n\tPlease note, the variable must exist before you can assign values to it.",
+                "If no serial is provided, this command will pause the script until you select a target to be assigned a variable.\n\t" +
+                "If '!' is specified, set a temporary variable that exists only until Razor exits. If both ! and @ are specified, set a variable" +
+                "only in the local scope",
                 "setvar 'dummy'\n\tcast 'magic arrow'\n\twaitfortarget\n\ttarget 'dummy'");
             descriptionCommands.Add("setvar", tooltip);
 
@@ -875,6 +865,76 @@ namespace Assistant.Scripts
                 "This command output a random number between 1 and the max number provided.",
                 "random '15'\n");
             descriptionCommands.Add("random", tooltip);
+
+            #endregion
+
+            #region Outlands
+
+            tooltip = new ToolTipDescriptions("warmode",
+                new[] { "warmode ('on' / 'off')" }, "N/A",
+                "Set your current war mode to on or off",
+                "warmode on\n");
+            descriptionCommands.Add("warmode", tooltip);
+
+            tooltip = new ToolTipDescriptions("getlabel",
+                new[] { "getlabel ('serial') ('name')" }, "N/A",
+                "Retrieve the label for the item with the given serial and store it in name. A label is the text displayed when single clicking.",
+                "getlabel 0x1234 mylabel\n");
+            descriptionCommands.Add("getlabel", tooltip);
+
+            tooltip = new ToolTipDescriptions("createlist",
+                new[] { "createlist ('list name')" }, "N/A",
+                "Create a new list",
+                "createlist mylist\n");
+            descriptionCommands.Add("createlist", tooltip);
+
+            tooltip = new ToolTipDescriptions("clearlist",
+                new[] { "clearlist ('list name')" }, "N/A",
+                "Clear an existing list. The list still exists after this operation.",
+                "clearlist mylist\n");
+            descriptionCommands.Add("clearlist", tooltip);
+
+            tooltip = new ToolTipDescriptions("removelist",
+                new[] { "removelist ('list name')" }, "N/A",
+                "Remove a list",
+                "removelist mylist\n");
+            descriptionCommands.Add("removelist", tooltip);
+
+            tooltip = new ToolTipDescriptions("pushlist",
+                new[] { "pushlist ('list name') ('element value') ['front'/'back']" }, "N/A",
+                "Push an element to a list",
+                "pushlist mylist myvalue front\n");
+            descriptionCommands.Add("pushlist", tooltip);
+
+            tooltip = new ToolTipDescriptions("poplist",
+                new[] { "poplist ('list name') ('element value'/'front'/'back')" }, "N/A",
+                "Pop an element from the list",
+                "poplist mylist myvalue front\n");
+            descriptionCommands.Add("poplist", tooltip);
+
+            tooltip = new ToolTipDescriptions("createtimer",
+                new[] { "createtimer ('timer name')" }, "N/A",
+                "Create and start a new timer",
+                "creatertimer atimer\n");
+            descriptionCommands.Add("createtimer", tooltip);
+
+            tooltip = new ToolTipDescriptions("removetimer",
+                new[] { "removetimer ('timer name')" }, "N/A",
+                "Stop and remove a timer",
+                "removetimer atimer\n");
+            descriptionCommands.Add("removetimer", tooltip);
+
+            tooltip = new ToolTipDescriptions("settimer",
+                new[] { "settimer ('timer name') ('value')" }, "N/A",
+                "Set a timer to the given time value",
+                "settimer atimer 10\n");
+            descriptionCommands.Add("settimer", tooltip);
+
+            tooltip = new ToolTipDescriptions("unsetvar",
+                new[] { "unsetvar ('name')" }, "N/A",
+                "Unset a variable. If '!' is specified, unset a temporary variable. If both ! and @ are specified, unset a temporary local variable.",
+                "unsetvar myvar\n");
+            descriptionCommands.Add("unsetvar", tooltip);
 
             #endregion
 

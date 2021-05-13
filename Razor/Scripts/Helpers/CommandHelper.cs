@@ -135,7 +135,7 @@ namespace Assistant.Scripts.Helpers
         /// <param name="random"></param>
         /// <param name="next"></param>
         /// <param name="prev"></param>
-        public static void FindTarget(Argument[] args, bool closest, bool random = false, bool next = false, bool prev = false)
+        public static void FindTarget(Variable[] args, bool closest, bool random = false, bool next = false, bool prev = false)
         {
             ScriptManager.TargetFound = false;
 
@@ -210,7 +210,7 @@ namespace Assistant.Scripts.Helpers
 
                         break;
                     default:
-                        throw new RunTimeError(null,
+                        throw new RunTimeError(
                             $"Unknown target type: '{args[1].AsString()}' - Missing type? (human/monster)");
                 }
             }
@@ -240,7 +240,7 @@ namespace Assistant.Scripts.Helpers
         /// <param name="closest"></param>
         /// <param name="random"></param>
         /// <param name="next"></param>
-        private static void FindTargetNotoriety(Argument[] args, bool closest, bool random, bool next)
+        private static void FindTargetNotoriety(Variable[] args, bool closest, bool random, bool next)
         {
             string[] notoList = args[1].AsString().Split(',');
 
@@ -361,7 +361,7 @@ namespace Assistant.Scripts.Helpers
         /// <param name="closest"></param>
         /// <param name="random"></param>
         /// <param name="next"></param>
-        private static void FindTargetPriority(Argument[] args, bool closest, bool random, bool next)
+        private static void FindTargetPriority(Variable[] args, bool closest, bool random, bool next)
         {
             string[] notoList = args[1].AsString().Split('!');
 
@@ -789,7 +789,7 @@ namespace Assistant.Scripts.Helpers
 
                         break;
                     default:
-                        throw new RunTimeError(null, $"Unknown target type: '{args[1].AsString()}'");
+                        throw new RunTimeError($"Unknown target type: '{args[1].AsString()}'");
                 }
             }
         }
