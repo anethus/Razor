@@ -36,11 +36,11 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("alliance", Alliance);
         }
 
-        private static bool Say(string command, Argument[] args, bool quiet, bool force)
+        private static bool Say(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: say ('text') [color]");
+                throw new RunTimeError("Usage: say ('text') [color]");
             }
 
             if (args.Length == 1)
@@ -51,11 +51,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool Whisper(string command, Argument[] args, bool quiet, bool force)
+        private static bool Whisper(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: whisper ('text') [color]");
+                throw new RunTimeError("Usage: whisper ('text') [color]");
             }
 
             MessageType type = MessageType.Whisper & ~MessageType.Encoded;
@@ -68,11 +68,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool Yell(string command, Argument[] args, bool quiet, bool force)
+        private static bool Yell(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: yell ('text') [color]");
+                throw new RunTimeError("Usage: yell ('text') [color]");
             }
 
             if (args.Length == 1)
@@ -83,11 +83,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool Emote(string command, Argument[] args, bool quiet, bool force)
+        private static bool Emote(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: emote ('text') [color]");
+                throw new RunTimeError("Usage: emote ('text') [color]");
             }
 
             if (args.Length == 1)
@@ -98,11 +98,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool Guild(string command, Argument[] args, bool quiet, bool force)
+        private static bool Guild(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: guild ('text')");
+                throw new RunTimeError("Usage: guild ('text')");
             }
 
             if (args.Length == 1)
@@ -113,11 +113,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool Alliance(string command, Argument[] args, bool quiet, bool force)
+        private static bool Alliance(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: alliance ('text')");
+                throw new RunTimeError("Usage: alliance ('text')");
             }
 
             if (args.Length == 1)

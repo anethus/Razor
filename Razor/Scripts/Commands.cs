@@ -116,12 +116,12 @@ namespace Assistant.Scripts
 
         private static string[] virtues = new string[3] { "honor", "sacrifice", "valor" };
 
-        private static bool Virtue(string command, Argument[] args, bool quiet, bool force)
+        private static bool Virtue(string command, Variable[] args, bool quiet, bool force)
         {
 
             if (args.Length == 0 || !virtues.Contains(args[0].AsString()))
             {
-                throw new RunTimeError(null, "Usage: virtue ('honor'/'sacrifice'/'valor')");
+                throw new RunTimeError("Usage: virtue ('honor'/'sacrifice'/'valor')");
             }
 
             switch (args[0].AsString())
@@ -140,7 +140,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool ClearAll(string command, Argument[] args, bool quiet, bool force)
+        private static bool ClearAll(string command, Variable[] args, bool quiet, bool force)
         {
 
             DragDropManager.GracefulStop(); // clear drag/drop queue
@@ -150,7 +150,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool SetLastTarget(string command, Argument[] args, bool quiet, bool force)
+        private static bool SetLastTarget(string command, Variable[] args, bool quiet, bool force)
         {
             if (!ScriptManager.SetLastTargetActive)
             {
@@ -169,63 +169,97 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static bool SetVar(string command, Argument[] args, bool quiet, bool force)
+        private enum SetVarState
         {
-            if (args.Length < 1)
+            INITIAL_PROMPT,
+            WAIT_FOR_TARGET,
+            COMPLETE,
+        };
+
+        private static SetVarState _setVarState = SetVarState.INITIAL_PROMPT;
+
+        private static bool SetVar(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length < 1 || args.Length > 2)
             {
-                throw new RunTimeError(null, "Usage: setvar ('variable') [timeout]");
+                throw new RunTimeError("Usage: setvar ('variable') [serial]");
             }
 
-            string varname = args[0].AsString();
+            string name = args[0].AsString(false);
 
-            ScriptVariables.ScriptVariable variable = ScriptVariables.GetVariable(varname);
-
-            if (variable == null)
+            if (args.Length == 2)
             {
-                World.Player.SendMessage(Config.GetInt("SysColor"), $"'{varname}' not found, creating new variable");
+                // No need to target anything. We have the serial.
+                var serial = args[1].AsSerial();
 
-                variable = new ScriptVariables.ScriptVariable(varname, new TargetInfo());
+                if (force)
+                {
+                    Interpreter.SetVariable(name, serial.ToString(), !quiet);
+                    return true;
+                }
 
-                ScriptVariables.ScriptVariableList.Add(variable);
+                if (ScriptVariables.GetVariable(name) == Serial.MinusOne)
+                {
+                    World.Player.SendMessage(Config.GetInt("SysColor"), $"'{name}' not found, creating new variable");
+                }
 
-                ScriptVariables.RegisterVariable(varname);
+                ScriptVariables.RegisterVariable(name, serial);
+                World.Player.SendMessage(MsgLevel.Force, $"'{name}' script variable updated to '{serial}'");
 
-                ScriptManager.RedrawScriptVariables();
-            }
+                Assistant.Engine.MainWindow.SaveScriptVariables();
 
-            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { return true; });
-            
-
-            if (!ScriptManager.SetVariableActive)
-            {
-                variable.SetTarget();
-                ScriptManager.SetVariableActive = true;
-
-                return false;
-            }
-
-            if (variable.TargetWasSet)
-            {
-                Interpreter.ClearTimeout();
-                ScriptManager.SetVariableActive = false;
                 return true;
+            }
+
+            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { _setVarState = SetVarState.INITIAL_PROMPT; return true; } );
+
+            switch (_setVarState)
+            {
+                case SetVarState.INITIAL_PROMPT:
+                    if (ScriptVariables.GetVariable(name) == Serial.MinusOne)
+                    {
+                        World.Player.SendMessage(Config.GetInt("SysColor"), $"'{name}' not found, creating new variable");
+                    }
+                    World.Player.SendMessage(MsgLevel.Force, $"Select target for variable '{name}'");
+
+                    _setVarState = SetVarState.WAIT_FOR_TARGET;
+
+                    Targeting.OneTimeTarget((ground, serial, pt, gfx) =>
+                    {
+                        ScriptVariables.RegisterVariable(name, serial);
+                        World.Player.SendMessage(MsgLevel.Force, $"'{name}' script variable updated to '{serial}'");
+
+                        Assistant.Engine.MainWindow.SaveScriptVariables();
+                        _setVarState = SetVarState.COMPLETE;
+                    });
+                    break;
+                case SetVarState.WAIT_FOR_TARGET:
+                    if (!Targeting.HasTarget)
+                    {
+                        _setVarState = SetVarState.INITIAL_PROMPT;
+                        return true;
+                    }
+                    break;
+                case SetVarState.COMPLETE:
+                    _setVarState = SetVarState.INITIAL_PROMPT;
+                    return true;
             }
 
             return false;
         }
 
-        private static bool Stop(string command, Argument[] args, bool quiet, bool force)
+        private static bool Stop(string command, Variable[] args, bool quiet, bool force)
         {
             ScriptManager.StopScript();
 
             return true;
         }
 
-        private static bool Hotkey(string command, Argument[] args, bool quiet, bool force)
+        private static bool Hotkey(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: hotkey ('name of hotkey') OR (hotkeyId)");
+                throw new RunTimeError("Usage: hotkey ('name of hotkey') OR (hotkeyId)");
             }
 
             string query = args[0].AsString();
@@ -234,7 +268,7 @@ namespace Assistant.Scripts
 
             if (hk == null)
             {
-                throw new RunTimeError(null, $"{command} - Hotkey '{query}' not found");
+                throw new RunTimeError($"{command} - Hotkey '{query}' not found");
             }
 
             hk.Callback();
@@ -242,11 +276,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool WaitForGump(string command, Argument[] args, bool quiet, bool force)
+        private static bool WaitForGump(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: waitforgump (gumpId/'any') [timeout]");
+                throw new RunTimeError("Usage: waitforgump (gumpId/'any') [timeout]");
             }
 
             uint gumpId = 0;
@@ -278,11 +312,11 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static bool WaitForMenu(string command, Argument[] args, bool quiet, bool force)
+        private static bool WaitForMenu(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: waitformenu (menuId/'any') [timeout]");
+                throw new RunTimeError("Usage: waitformenu (menuId/'any') [timeout]");
             }
 
             uint menuId = 0;
@@ -303,11 +337,11 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static bool WaitForPrompt(string command, Argument[] args, bool quiet, bool force)
+        private static bool WaitForPrompt(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: waitforprompt (promptId/'any') [timeout]");
+                throw new RunTimeError("Usage: waitforprompt (promptId/'any') [timeout]");
             }
 
             uint promptId = 0;
@@ -341,11 +375,11 @@ namespace Assistant.Scripts
 
         private static string[] abilities = new string[4] {"primary", "secondary", "stun", "disarm"};
 
-        private static bool SetAbility(string command, Argument[] args, bool quiet, bool force)
+        private static bool SetAbility(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1 || !abilities.Contains(args[0].AsString()))
             {
-                throw new RunTimeError(null, "Usage: setability ('primary'/'secondary'/'stun'/'disarm') ['on'/'off']");
+                throw new RunTimeError("Usage: setability ('primary'/'secondary'/'stun'/'disarm') ['on'/'off']");
             }
 
             if (args.Length == 2 && args[1].AsString() == "on" || args.Length == 1)
@@ -379,11 +413,11 @@ namespace Assistant.Scripts
 
         private static string[] hands = new string[4] {"left", "right", "both", "hands"};
 
-        private static bool ClearHands(string command, Argument[] args, bool quiet, bool force)
+        private static bool ClearHands(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0 || !hands.Contains(args[0].AsString()))
             {
-                throw new RunTimeError(null, "Usage: clearhands ('left'/'right'/'both')");
+                throw new RunTimeError("Usage: clearhands ('left'/'right'/'both')");
             }
 
             switch (args[0].AsString())
@@ -403,11 +437,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool DClickType(string command, Argument[] args, bool quiet, bool force)
+        private static bool DClickType(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null,
+                throw new RunTimeError(
                     "Usage: dclicktype ('name of item') OR (graphicID) [inrangecheck (true/false)/backpack]");
             }
 
@@ -470,11 +504,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool DClick(string command, Argument[] args, bool quiet, bool force)
+        private static bool DClick(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: dclick (serial) or dclick ('left'/'right'/'hands')");
+                throw new RunTimeError("Usage: dclick (serial) or dclick ('left'/'right'/'hands')");
             }
 
             if (hands.Contains(args[0].AsString()))
@@ -509,7 +543,7 @@ namespace Assistant.Scripts
 
                 if (!serial.IsValid)
                 {
-                    throw new RunTimeError(null, "dclick - invalid serial");
+                    throw new RunTimeError("dclick - invalid serial");
                 }
 
                 PlayerData.DoubleClick(serial);
@@ -518,11 +552,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool DropItem(string command, Argument[] args, bool quiet, bool force)
+        private static bool DropItem(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: drop (serial) (x y z/layername)");
+                throw new RunTimeError("Usage: drop (serial) (x y z/layername)");
             }
 
             Serial serial = args[0].AsString().IndexOf("ground", StringComparison.InvariantCultureIgnoreCase) > 0
@@ -570,11 +604,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool DropRelLoc(string command, Argument[] args, bool quiet, bool force)
+        private static bool DropRelLoc(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 2)
             {
-                throw new RunTimeError(null, "Usage: droprelloc (x) (y)");
+                throw new RunTimeError("Usage: droprelloc (x) (y)");
             }
 
             int x = args[0].AsInt();
@@ -596,18 +630,18 @@ namespace Assistant.Scripts
 
         private static int _lastLiftId;
 
-        private static bool LiftItem(string command, Argument[] args, bool quiet, bool force)
+        private static bool LiftItem(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: lift (serial) [amount]");
+                throw new RunTimeError("Usage: lift (serial) [amount]");
             }
 
             Serial serial = args[0].AsSerial();
 
             if (!serial.IsValid)
             {
-                throw new RunTimeError(null, $"{command} - Invalid serial");
+                throw new RunTimeError($"{command} - Invalid serial");
             }
 
             ushort amount = 1;
@@ -652,11 +686,11 @@ namespace Assistant.Scripts
 
         private static int _lastLiftTypeId;
 
-        private static bool LiftType(string command, Argument[] args, bool quiet, bool force)
+        private static bool LiftType(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: lifttype (gfx/'name of item') [amount]");
+                throw new RunTimeError("Usage: lifttype (gfx/'name of item') [amount]");
             }
 
             string gfxStr = args[0].AsString();
@@ -720,11 +754,11 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static bool Walk(string command, Argument[] args, bool quiet, bool force)
+        private static bool Walk(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: walk ('direction')");
+                throw new RunTimeError("Usage: walk ('direction')");
             }
 
             if (ScriptManager.LastWalk + TimeSpan.FromSeconds(0.4) >= DateTime.UtcNow)
@@ -740,11 +774,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool UseSkill(string command, Argument[] args, bool quiet, bool force)
+        private static bool UseSkill(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: skill ('skill name'/'last')");
+                throw new RunTimeError("Usage: skill ('skill name'/'last')");
             }
 
             int skillId = 0;
@@ -773,28 +807,28 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool Pause(string command, Argument[] args, bool quiet, bool force)
+        private static bool Pause(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
-                throw new RunTimeError(null, "Usage: pause/wait (timeout)");
+                throw new RunTimeError("Usage: pause/wait (timeout)");
 
             Interpreter.Pause(args[0].AsUInt());
 
             return true;
         }
 
-        private static bool Attack(string command, Argument[] args, bool quiet, bool force)
+        private static bool Attack(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: attack (serial)");
+                throw new RunTimeError("Usage: attack (serial)");
             }
 
             Serial serial = args[0].AsSerial();
 
             if (!serial.IsValid)
             {
-                throw new RunTimeError(null, $"{command} - Invalid serial");
+                throw new RunTimeError($"{command} - Invalid serial");
             }
 
             if (serial == Targeting.LastTargetInfo.Serial)
@@ -810,11 +844,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool Cast(string command, Argument[] args, bool quiet, bool force)
+        private static bool Cast(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: cast 'name of spell'");
+                throw new RunTimeError("Usage: cast 'name of spell'");
             }
 
             Spell spell = int.TryParse(args[0].AsString(), out int spellnum)
@@ -827,17 +861,17 @@ namespace Assistant.Scripts
             }
             else
             {
-                throw new RunTimeError(null, $"{command} - Spell name or number not valid");
+                throw new RunTimeError($"{command} - Spell name or number not valid");
             }
 
             return true;
         }
 
-        private static bool HeadMsg(string command, Argument[] args, bool quiet, bool force)
+        private static bool HeadMsg(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: overhead ('text') [color] [serial]");
+                throw new RunTimeError("Usage: overhead ('text') [color] [serial]");
             }
 
             if (args.Length == 1)
@@ -863,11 +897,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool SysMsg(string command, Argument[] args, bool quiet, bool force)
+        private static bool SysMsg(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: sysmsg ('text') [color]");
+                throw new RunTimeError("Usage: sysmsg ('text') [color]");
             }
 
             if (args.Length == 1)
@@ -882,7 +916,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool ClearSysMsg(string command, Argument[] args, bool quiet, bool force)
+        private static bool ClearSysMsg(string command, Variable[] args, bool quiet, bool force)
         {
             SystemMessages.Messages.Clear();
 
@@ -891,11 +925,11 @@ namespace Assistant.Scripts
 
         private static DressList _lastDressList;
 
-        private static bool DressCommand(string command, Argument[] args, bool quiet, bool force)
+        private static bool DressCommand(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: dress ('name of dress list')");
+                throw new RunTimeError("Usage: dress ('name of dress list')");
             }
 
             if (_lastDressList == null)
@@ -925,7 +959,7 @@ namespace Assistant.Scripts
         private static bool _undressAll;
         private static bool _undressLayer;
 
-        private static bool UnDressCommand(string command, Argument[] args, bool quiet, bool force)
+        private static bool UnDressCommand(string command, Variable[] args, bool quiet, bool force)
         {
 
             if (args.Length == 0 && !_undressAll) // full naked!
@@ -950,7 +984,7 @@ namespace Assistant.Scripts
                     }
                     else
                     {
-                        throw new RunTimeError(null, $"'{args[0].AsString()}' not found");
+                        throw new RunTimeError($"'{args[0].AsString()}' not found");
                     }
                 }
             }
@@ -965,12 +999,12 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static bool GumpResponse(string command, Argument[] args, bool quiet, bool force)
+        private static bool GumpResponse(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: gumpresponse (buttondId)");
-                //throw new RunTimeError(null, "Usage: gumpresponse (buttondId) [option] ['text1'|fieldId] ['text2'|fieldId]");
+                throw new RunTimeError("Usage: gumpresponse (buttondId)");
+                //throw new RunTimeError("Usage: gumpresponse (buttondId) [option] ['text1'|fieldId] ['text2'|fieldId]");
             }
 
             int buttonId = args[0].AsInt();
@@ -993,7 +1027,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool GumpClose(string command, Argument[] args, bool quiet, bool force)
+        private static bool GumpClose(string command, Variable[] args, bool quiet, bool force)
         {
             Client.Instance.SendToClient(new CloseGump(World.Player.CurrentGumpI));
             Client.Instance.SendToServer(new GumpResponse(World.Player.CurrentGumpS, World.Player.CurrentGumpI, 0,
@@ -1005,11 +1039,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool ContextMenu(string command, Argument[] args, bool quiet, bool force)
+        private static bool ContextMenu(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 2)
             {
-                throw new RunTimeError(null, "Usage: menu (serial) (index)");
+                throw new RunTimeError("Usage: menu (serial) (index)");
             }
 
             Serial s = args[0].AsSerial();
@@ -1023,11 +1057,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool MenuResponse(string command, Argument[] args, bool quiet, bool force)
+        private static bool MenuResponse(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 2)
             {
-                throw new RunTimeError(null, "Usage: menuresponse (index) (menuId) [hue]");
+                throw new RunTimeError("Usage: menuresponse (index) (menuId) [hue]");
             }
 
             ushort index = args[0].AsUShort();
@@ -1043,18 +1077,18 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool PromptResponse(string command, Argument[] args, bool quiet, bool force)
+        private static bool PromptResponse(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: promptresponse ('response to the prompt')");
+                throw new RunTimeError("Usage: promptresponse ('response to the prompt')");
             }
 
             World.Player.ResponsePrompt(args[0].AsString());
             return true;
         }
 
-        private static bool LastTarget(string command, Argument[] args, bool quiet, bool force)
+        private static bool LastTarget(string command, Variable[] args, bool quiet, bool force)
         {
             if (!Targeting.DoLastTarget())
                 Targeting.ResendTarget();
@@ -1062,11 +1096,11 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool PlayScript(string command, Argument[] args, bool quiet, bool force)
+        private static bool PlayScript(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: script 'name of script'");
+                throw new RunTimeError("Usage: script 'name of script'");
             }
 
             ScriptManager.PlayScript(args[0].AsString());
@@ -1087,11 +1121,11 @@ namespace Assistant.Scripts
             {"agility", 3848}
         };
 
-        private static bool Potion(string command, Argument[] args, bool quiet, bool force)
+        private static bool Potion(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError(null, "Usage: potion ('type')");
+                throw new RunTimeError("Usage: potion ('type')");
             }
 
             Item pack = World.Player.Backpack;
@@ -1114,17 +1148,17 @@ namespace Assistant.Scripts
             }
             else
             {
-                throw new RunTimeError(null, $"{command} - Unknown potion type");
+                throw new RunTimeError($"{command} - Unknown potion type");
             }
 
             return true;
         }
 
-        private static bool WaitForSysMsg(string command, Argument[] args, bool quiet, bool force)
+        private static bool WaitForSysMsg(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: waitforsysmsg 'message to wait for' [timeout]");
+                throw new RunTimeError("Usage: waitforsysmsg 'message to wait for' [timeout]");
             }
             
             if (SystemMessages.Exists(args[0].AsString()))
@@ -1138,11 +1172,11 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static bool Random(string command, Argument[] args, bool quiet, bool force)
+        private static bool Random(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError(null, "Usage: random 'max value'");
+                throw new RunTimeError("Usage: random 'max value'");
             }
 
             int max = args[0].AsInt();
@@ -1152,14 +1186,14 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool ClearDragDrop(string command, Argument[] args, bool quiet, bool force)
+        private static bool ClearDragDrop(string command, Variable[] args, bool quiet, bool force)
         {
             DragDropManager.GracefulStop();
 
             return true;
         }
         
-        private static bool Interrupt(string command, Argument[] args, bool quiet, bool force)
+        private static bool Interrupt(string command, Variable[] args, bool quiet, bool force)
         {
             Spell.Interrupt();
 

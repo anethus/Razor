@@ -421,9 +421,7 @@ namespace Assistant
         {
             try
             {
-                Process.Start(url);
-
-                /*if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
@@ -439,7 +437,7 @@ namespace Assistant
                 else
                 {
                     Process.Start("xdg-open", url);
-                }*/
+                }
             }
             catch (Exception ex)
             {
