@@ -934,6 +934,18 @@ namespace Assistant.Scripts
                 "unsetvar myvar\n");
             descriptionCommands.Add("unsetvar", tooltip);
 
+            tooltip = new ToolTipDescriptions("buffexist",
+                new[] { "buffexist ('buffname')" }, "N/A",
+                "TODO: put here awsome desc",
+                "buffexist paralyze\n");
+            descriptionCommands.Add("buffexist", tooltip);
+
+            tooltip = new ToolTipDescriptions("paralyzed",
+                new[] { "paralyzed" }, "N/A",
+                "TODO: put here awsome desc",
+                "paralyzed\n");
+            descriptionCommands.Add("paralyzed", tooltip);
+
             #endregion
 
             if (!Config.GetBool("DisableScriptTooltips"))

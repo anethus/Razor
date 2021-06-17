@@ -19,20 +19,17 @@
 #endregion
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using Assistant.Core;
-using Assistant.HotKeys;
 using Assistant.Scripts.Engine;
-using Assistant.Scripts.Helpers;
 
 namespace Assistant.Scripts
 {
     public static class Outlands
     {
+        // Take all list of BuffIcon to string
+        private static readonly string[] buffNames = Enum.GetNames(typeof(BuffIcon));
+
         public static void Register()
         {
             // Lists
@@ -60,6 +57,10 @@ namespace Assistant.Scripts
 
             Interpreter.RegisterExpressionHandler("followers", Followers);
             Interpreter.RegisterExpressionHandler("hue", Hue);
+
+
+            Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
+            Interpreter.RegisterExpressionHandler("buffexist", BuffExist);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -341,6 +342,33 @@ namespace Assistant.Scripts
                 return 0;
 
             return item.Hue;
+        }
+
+        private static bool Paralyzed(string expression, Variable[] args, bool quiet)
+        {
+            // Simple expresion for Paralyzed
+            if (World.Player == null)
+                return false;
+
+            return World.Player.BuffsDebuffs.Exists(buff => buff.BuffIcon == BuffIcon.Paralyze);
+        }
+
+        private static bool BuffExist(string expression, Variable[] args, bool quiet)
+        {
+            // Complex expression for more types of buff
+            if (args.Length < 1)
+                throw new RunTimeError("Usage: buffexist ('buff name')");
+
+            if (World.Player == null)
+                return false;
+
+            var correctBuffName = Array.Find(buffNames, x => x.ToLower() == args[0].AsString().ToLower());
+            if (string.IsNullOrEmpty(correctBuffName))
+            {
+                throw new RunTimeError("Wrong buff name");
+            }
+
+            return World.Player.BuffsDebuffs.Exists(x => x.BuffIcon == (BuffIcon)Enum.Parse(typeof(BuffIcon), correctBuffName));
         }
     }
 }
