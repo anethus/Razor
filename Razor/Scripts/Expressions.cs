@@ -29,6 +29,9 @@ namespace Assistant.Scripts
 {
     public static class Expressions
     {
+        // Take all list of BuffIcon to string
+        private static readonly string[] buffNames = Enum.GetNames(typeof(BuffIcon));
+
         public static void Register()
         {
             Interpreter.RegisterExpressionHandler("stam", Stam);
@@ -40,7 +43,9 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("mana", Mana);
             Interpreter.RegisterExpressionHandler("maxmana", MaxMana);
             Interpreter.RegisterExpressionHandler("poisoned", Poisoned);
+            Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
             Interpreter.RegisterExpressionHandler("hidden", Hidden);
+            Interpreter.RegisterExpressionHandler("buffexist", BuffExist);
 
             Interpreter.RegisterExpressionHandler("mounted", Mounted);
             Interpreter.RegisterExpressionHandler("rhandempty", RHandEmpty);
@@ -220,9 +225,36 @@ namespace Assistant.Scripts
                    World.Player.Poisoned;
         }
 
+        private static bool Paralyzed(string expression, Variable[] args, bool quiet)
+        {
+            // Simple expresion for Paralyzed
+            if (World.Player == null)
+                return false;
+
+            return World.Player.BuffsDebuffs.Exists(buff => buff.BuffIcon == BuffIcon.Paralyze);
+        }
+
         private static bool Hidden(string expression, Variable[] args, bool quiet)
         {
             return World.Player != null && !World.Player.Visible;
+        }
+
+        private static bool BuffExist(string expression, Variable[] args, bool quiet)
+        {
+            // Complex expression for more types of buff
+            if (args.Length < 1)
+                throw new RunTimeError("Usage: buffexist ('buff name')");
+
+            if (World.Player == null)
+                return false;
+
+            var correctBuffName = Array.Find(buffNames, x => x.ToLower() == args[0].AsString().ToLower());
+            if (string.IsNullOrEmpty(correctBuffName))
+            {
+                throw new RunTimeError("Wrong buff name");
+            }
+
+            return World.Player.BuffsDebuffs.Exists(x => x.BuffIcon == (BuffIcon)Enum.Parse(typeof(BuffIcon), correctBuffName));
         }
 
         private static int Hp(string expression, Variable[] args, bool quiet)
