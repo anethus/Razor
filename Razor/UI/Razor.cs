@@ -127,6 +127,10 @@ namespace Assistant
 
         private bool m_Initializing = false;
 
+        private readonly int MAX_OBJ_DELAY_VALUE = 4000;
+
+        private readonly int MIN_OBJ_DELAY_VALUE = 50;
+
         public void InitConfig()
         {
             m_Initializing = true;
@@ -241,9 +245,9 @@ namespace Assistant
 
             autoOpenDoors.SafeAction(s => { s.Checked = Config.GetBool("AutoOpenDoors"); });
 
-            objectDelay.SafeAction(s => { s.Checked = Config.GetBool("ObjectDelayEnabled"); });
+            //objectDelay.SafeAction(s => { s.Checked = Config.GetBool("ObjectDelayEnabled"); });
 
-            txtObjDelay.SafeAction(s => { s.Enabled = Config.GetBool("ObjectDelayEnabled"); });
+            //txtObjDelay.SafeAction(s => { s.Enabled = Config.GetBool("ObjectDelayEnabled"); });
 
             msglvl.SafeAction(s => { s.SelectedIndex = Config.GetInt("MessageLevel"); });
 
@@ -2013,8 +2017,24 @@ namespace Assistant
             Config.SetProperty("QueueActions", QueueActions.Checked);
         }
 
-        private void txtObjDelay_TextChanged(object sender, System.EventArgs e)
+        private void textObjDelay_Validating(object sender, CancelEventArgs e)
         {
+            if (!int.TryParse(txtObjDelay.Text, out var newValue))
+            {
+                _objDelayErrorProvider.SetError(txtObjDelay, $"Value must be between number");
+                e.Cancel = true;
+            }
+
+            if (newValue > MAX_OBJ_DELAY_VALUE || newValue < MIN_OBJ_DELAY_VALUE)
+            {
+                _objDelayErrorProvider.SetError(txtObjDelay, $"Value must be between {MIN_OBJ_DELAY_VALUE} and {MAX_OBJ_DELAY_VALUE}");
+                e.Cancel = true;
+            }
+        }
+
+        private void txtObjDelay_Validated(object sender, System.EventArgs e)
+        {
+            _objDelayErrorProvider.Clear();
             Config.SetProperty("ObjectDelay", Utility.ToInt32(txtObjDelay.Text.Trim(), 500));
         }
 
