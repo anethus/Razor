@@ -1642,6 +1642,8 @@ namespace Assistant
             this.txtObjDelay.TabIndex = 56;
             this.txtObjDelay.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtObjDelay.TextChanged += new System.EventHandler(this.txtObjDelay_TextChanged);
+            this.txtObjDelay.Text = "500";
+            this.txtObjDelay.ReadOnly = true;
             // 
             // objectDelay
             // 
@@ -1651,6 +1653,8 @@ namespace Assistant
             this.objectDelay.TabIndex = 53;
             this.objectDelay.Text = "Object Delay:";
             this.objectDelay.CheckedChanged += new System.EventHandler(this.objectDelay_CheckedChanged);
+            this.objectDelay.Checked = true;
+            this.objectDelay.Enabled = false;
             // 
             // ltRange
             // 

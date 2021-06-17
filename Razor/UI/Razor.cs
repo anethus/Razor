@@ -227,7 +227,7 @@ namespace Assistant
 
             txtSpellFormat.SafeAction(s => { s.Text = Config.GetString("SpellFormat"); });
 
-            txtObjDelay.SafeAction(s => { s.Text = Config.GetInt("ObjectDelay").ToString(); });
+            //txtObjDelay.SafeAction(s => { s.Text = Config.GetInt("ObjectDelay").ToString(); });
 
             chkStealth.SafeAction(s => { s.Checked = Config.GetBool("CountStealthSteps"); });
 
@@ -241,9 +241,9 @@ namespace Assistant
 
             autoOpenDoors.SafeAction(s => { s.Checked = Config.GetBool("AutoOpenDoors"); });
 
-            objectDelay.SafeAction(s => { s.Checked = Config.GetBool("ObjectDelayEnabled"); });
+            //objectDelay.SafeAction(s => { s.Checked = Config.GetBool("ObjectDelayEnabled"); });
 
-            txtObjDelay.SafeAction(s => { s.Enabled = Config.GetBool("ObjectDelayEnabled"); });
+            //txtObjDelay.SafeAction(s => { s.Enabled = Config.GetBool("ObjectDelayEnabled"); });
 
             msglvl.SafeAction(s => { s.SelectedIndex = Config.GetInt("MessageLevel"); });
 
