@@ -314,7 +314,7 @@ namespace Assistant
         private ComboBox playableMusicList;
         private TreeView _macroTreeViewCache = new TreeView();
         private TreeView _scriptTreeViewCache = new TreeView();
-
+        private ErrorProvider _objDelayErrorProvider;
 
         public Label WaitDisplay
         {
@@ -1641,7 +1641,16 @@ namespace Assistant
             this.txtObjDelay.Size = new System.Drawing.Size(32, 23);
             this.txtObjDelay.TabIndex = 56;
             this.txtObjDelay.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtObjDelay.TextChanged += new System.EventHandler(this.txtObjDelay_TextChanged);
+            this.txtObjDelay.Validating += new System.ComponentModel.CancelEventHandler(this.textObjDelay_Validating);
+            this.txtObjDelay.Validated += new System.EventHandler(this.txtObjDelay_Validated);
+            this.txtObjDelay.Text = "500";
+            //
+            // errorProvider for textObjDelay
+            //
+            this._objDelayErrorProvider = new ErrorProvider();
+            this._objDelayErrorProvider.SetIconAlignment(this.txtObjDelay, ErrorIconAlignment.MiddleRight);
+            this._objDelayErrorProvider.SetIconPadding(this.txtObjDelay, 2);
+            this._objDelayErrorProvider.BlinkStyle = ErrorBlinkStyle.AlwaysBlink;
             // 
             // objectDelay
             // 
@@ -1651,6 +1660,8 @@ namespace Assistant
             this.objectDelay.TabIndex = 53;
             this.objectDelay.Text = "Object Delay:";
             this.objectDelay.CheckedChanged += new System.EventHandler(this.objectDelay_CheckedChanged);
+            this.objectDelay.Checked = true;
+            this.objectDelay.Enabled = false;
             // 
             // ltRange
             // 
@@ -1697,7 +1708,7 @@ namespace Assistant
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(147, 93);
+            this.label6.Location = new System.Drawing.Point(157, 93);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(32, 18);
             this.label6.TabIndex = 55;
