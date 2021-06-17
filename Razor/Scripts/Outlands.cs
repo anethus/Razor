@@ -19,15 +19,10 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using Assistant.Core;
-using Assistant.HotKeys;
 using Assistant.Scripts.Engine;
-using Assistant.Scripts.Helpers;
 
 namespace Assistant.Scripts
 {
@@ -60,6 +55,11 @@ namespace Assistant.Scripts
 
             Interpreter.RegisterExpressionHandler("followers", Followers);
             Interpreter.RegisterExpressionHandler("hue", Hue);
+
+            // Mobile flags
+            Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
+            Interpreter.RegisterExpressionHandler("blessed", Blessed);
+            Interpreter.RegisterExpressionHandler("warmode", InWarmode);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -341,6 +341,30 @@ namespace Assistant.Scripts
                 return 0;
 
             return item.Hue;
+        }
+
+        private static bool Paralyzed(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return false;
+
+            return World.Player.Paralyzed;
+        }
+
+        private static bool Blessed(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return false;
+
+            return World.Player.Blessed;
+        }
+
+        private static bool InWarmode(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return false;
+
+            return World.Player.Warmode;
         }
     }
 }

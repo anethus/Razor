@@ -61,16 +61,15 @@ namespace Assistant
 
         private byte m_Notoriety;
 
-        private bool m_Visible;
+        // Mobile flags
+        private bool m_Paralyzed;
         private bool m_Female;
-        private bool m_Poisoned;
+        private bool m_Flying;
         private bool m_Blessed;
         private bool m_Warmode;
+        private bool m_Hidden;
 
-        //new
-        private bool m_Unknown;
-        private bool m_Unknown2;
-        private bool m_Unknown3;
+        private bool m_Poisoned;
 
         private bool m_CanRename;
         //end new
@@ -166,7 +165,6 @@ namespace Assistant
         public Mobile(Serial serial) : base(serial)
         {
             m_Map = World.Player == null ? (byte) 0 : World.Player.Map;
-            m_Visible = true;
 
             Agent.InvokeMobileCreated(this);
         }
@@ -243,8 +241,8 @@ namespace Assistant
 
         public bool Visible
         {
-            get { return m_Visible; }
-            set { m_Visible = value; }
+            get { return !m_Hidden; }
+            set { m_Hidden = !value; }
         }
 
         public bool Poisoned
@@ -293,23 +291,10 @@ namespace Assistant
             get { return !IsHuman; }
         }
 
-        //new
-        public bool Unknown
+        public bool Paralyzed
         {
-            get { return m_Unknown; }
-            set { m_Unknown = value; }
-        }
-
-        public bool Unknown2
-        {
-            get { return m_Unknown2; }
-            set { m_Unknown2 = value; }
-        }
-
-        public bool Unknown3
-        {
-            get { return m_Unknown3; }
-            set { m_Unknown3 = value; }
+            get { return m_Paralyzed; }
+            set { m_Paralyzed = value; }
         }
 
         public bool CanRename //A pet! (where the health bar is open, we can add this to an arraylist of mobiles...
@@ -544,10 +529,13 @@ namespace Assistant
         {
             int flags = 0x0;
 
+            if (m_Paralyzed)
+                flags |= 0x01;
+
             if (m_Female)
                 flags |= 0x02;
 
-            if (m_Poisoned)
+            if (m_Flying)
                 flags |= 0x04;
 
             if (m_Blessed)
@@ -556,17 +544,8 @@ namespace Assistant
             if (m_Warmode)
                 flags |= 0x40;
 
-            if (!m_Visible)
+            if (m_Hidden)
                 flags |= 0x80;
-
-            if (m_Unknown)
-                flags |= 0x01;
-
-            if (m_Unknown2)
-                flags |= 0x10;
-
-            if (m_Unknown3)
-                flags |= 0x20;
 
             return flags;
         }
@@ -576,13 +555,12 @@ namespace Assistant
             if (!PacketHandlers.UseNewStatus)
                 m_Poisoned = (flags & 0x04) != 0;
 
-            m_Unknown = (flags & 0x01) != 0; //new
+            m_Paralyzed = (flags & 0x01) != 0;
             m_Female = (flags & 0x02) != 0;
+            m_Flying = (flags & 0x04) != 0;
             m_Blessed = (flags & 0x08) != 0;
-            m_Unknown2 = (flags & 0x10) != 0; //new
-            m_Unknown3 = (flags & 0x10) != 0; //new
             m_Warmode = (flags & 0x40) != 0;
-            m_Visible = (flags & 0x80) == 0;
+            m_Hidden = (flags & 0x80) != 0;
         }
 
         public List<Item> Contains
