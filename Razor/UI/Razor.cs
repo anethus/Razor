@@ -127,6 +127,10 @@ namespace Assistant
 
         private bool m_Initializing = false;
 
+        private readonly int MAX_OBJ_DELAY_VALUE = 800;
+
+        private readonly int MIN_OBJ_DELAY_VALUE = 500;
+
         public void InitConfig()
         {
             m_Initializing = true;
@@ -227,7 +231,7 @@ namespace Assistant
 
             txtSpellFormat.SafeAction(s => { s.Text = Config.GetString("SpellFormat"); });
 
-            //txtObjDelay.SafeAction(s => { s.Text = Config.GetInt("ObjectDelay").ToString(); });
+            txtObjDelay.SafeAction(s => { s.Text = Config.GetInt("ObjectDelay").ToString(); });
 
             chkStealth.SafeAction(s => { s.Checked = Config.GetBool("CountStealthSteps"); });
 
@@ -2013,8 +2017,24 @@ namespace Assistant
             Config.SetProperty("QueueActions", QueueActions.Checked);
         }
 
-        private void txtObjDelay_TextChanged(object sender, System.EventArgs e)
+        private void textObjDelay_Validating(object sender, CancelEventArgs e)
         {
+            if (!int.TryParse(txtObjDelay.Text, out var newValue))
+            {
+                _objDelayErrorProvider.SetError(txtObjDelay, $"Value must be between number");
+                e.Cancel = true;
+            }
+
+            if (newValue > MAX_OBJ_DELAY_VALUE || newValue < MIN_OBJ_DELAY_VALUE)
+            {
+                _objDelayErrorProvider.SetError(txtObjDelay, $"Value must be between {MIN_OBJ_DELAY_VALUE} and {MAX_OBJ_DELAY_VALUE}");
+                e.Cancel = true;
+            }
+        }
+
+        private void txtObjDelay_Validated(object sender, System.EventArgs e)
+        {
+            _objDelayErrorProvider.Clear();
             Config.SetProperty("ObjectDelay", Utility.ToInt32(txtObjDelay.Text.Trim(), 500));
         }
 
