@@ -19,6 +19,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Assistant.Core;
 using Assistant.Scripts.Engine;
@@ -27,8 +28,16 @@ namespace Assistant.Scripts
 {
     public static class Outlands
     {
-        // Take all list of BuffIcon to string
-        private static readonly string[] buffNames = Enum.GetNames(typeof(BuffIcon));
+        // Map string passed to Razor with BuffIcon
+        private static readonly Dictionary<string, BuffIcon> buffNameMap = new Dictionary<string, BuffIcon>()
+        {
+            { "paralyze", BuffIcon.Paralyze },
+            { "meditation", BuffIcon.ActiveMeditation },
+            { "invisibility", BuffIcon.HidingAndOrStealth },
+            { "agility", BuffIcon.Agility },
+            { "strength", BuffIcon.Strength },
+            { "magicreflection", BuffIcon.MagicReflection }
+        };
 
         public static void Register()
         {
@@ -58,8 +67,6 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("followers", Followers);
             Interpreter.RegisterExpressionHandler("hue", Hue);
 
-
-            Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
             Interpreter.RegisterExpressionHandler("buffexist", BuffExist);
         }
 
@@ -344,15 +351,6 @@ namespace Assistant.Scripts
             return item.Hue;
         }
 
-        private static bool Paralyzed(string expression, Variable[] args, bool quiet)
-        {
-            // Simple expresion for Paralyzed
-            if (World.Player == null)
-                return false;
-
-            return World.Player.BuffsDebuffs.Exists(buff => buff.BuffIcon == BuffIcon.Paralyze);
-        }
-
         private static bool BuffExist(string expression, Variable[] args, bool quiet)
         {
             // Complex expression for more types of buff
@@ -362,13 +360,12 @@ namespace Assistant.Scripts
             if (World.Player == null)
                 return false;
 
-            var correctBuffName = Array.Find(buffNames, x => x.ToLower() == args[0].AsString().ToLower());
-            if (string.IsNullOrEmpty(correctBuffName))
-            {
+            if(!buffNameMap.TryGetValue(args[0].AsString().ToLower(), out var passedBuff))
+            { 
                 throw new RunTimeError("Wrong buff name");
             }
 
-            return World.Player.BuffsDebuffs.Exists(x => x.BuffIcon == (BuffIcon)Enum.Parse(typeof(BuffIcon), correctBuffName));
+            return World.Player.BuffsDebuffs.Exists(x => x.BuffIcon == passedBuff);
         }
     }
 }
