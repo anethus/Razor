@@ -66,9 +66,9 @@ namespace Assistant
         private bool m_Poisoned;
         private bool m_Blessed;
         private bool m_Warmode;
+        private bool m_Paralyze;
 
         //new
-        private bool m_Unknown;
         private bool m_Unknown2;
         private bool m_Unknown3;
 
@@ -293,11 +293,10 @@ namespace Assistant
             get { return !IsHuman; }
         }
 
-        //new
-        public bool Unknown
+        public bool Paralyze
         {
-            get { return m_Unknown; }
-            set { m_Unknown = value; }
+            get { return m_Paralyze; }
+            set { m_Paralyze = value; }
         }
 
         public bool Unknown2
@@ -544,6 +543,9 @@ namespace Assistant
         {
             int flags = 0x0;
 
+            if (m_Paralyze)
+                flags |= 0x01;
+
             if (m_Female)
                 flags |= 0x02;
 
@@ -559,9 +561,6 @@ namespace Assistant
             if (!m_Visible)
                 flags |= 0x80;
 
-            if (m_Unknown)
-                flags |= 0x01;
-
             if (m_Unknown2)
                 flags |= 0x10;
 
@@ -576,7 +575,7 @@ namespace Assistant
             if (!PacketHandlers.UseNewStatus)
                 m_Poisoned = (flags & 0x04) != 0;
 
-            m_Unknown = (flags & 0x01) != 0; //new
+            m_Paralyze = (flags & 0x01) != 0;
             m_Female = (flags & 0x02) != 0;
             m_Blessed = (flags & 0x08) != 0;
             m_Unknown2 = (flags & 0x10) != 0; //new

@@ -68,6 +68,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("hue", Hue);
 
             Interpreter.RegisterExpressionHandler("buffexist", BuffExist);
+            Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -349,6 +350,13 @@ namespace Assistant.Scripts
                 return 0;
 
             return item.Hue;
+        }
+
+        private static bool Paralyzed(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return false;
+            return World.Player.Paralyze;
         }
 
         private static bool BuffExist(string expression, Variable[] args, bool quiet)
