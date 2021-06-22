@@ -212,7 +212,7 @@ namespace Assistant.Scripts
                 return true;
             }
 
-            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { _setVarState = SetVarState.INITIAL_PROMPT; return true; });
+            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { _setVarState = SetVarState.INITIAL_PROMPT; return true;});
 
             switch (_setVarState)
             {
@@ -374,7 +374,7 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static string[] abilities = new string[4] { "primary", "secondary", "stun", "disarm" };
+        private static string[] abilities = new string[4] {"primary", "secondary", "stun", "disarm"};
 
         private static bool SetAbility(string command, Variable[] args, bool quiet, bool force)
         {
@@ -573,7 +573,7 @@ namespace Assistant.Scripts
                     to = new Point3D(World.Player.Position.X, World.Player.Position.Y, World.Player.Position.Z);
                     break;
                 case 2: // dropping on a layer
-                    layer = (Layer)Enum.Parse(typeof(Layer), args[1].AsString(), true);
+                    layer = (Layer) Enum.Parse(typeof(Layer), args[1].AsString(), true);
                     break;
                 case 3: // x y
                     to = new Point3D(Utility.ToInt32(args[1].AsString(), 0), Utility.ToInt32(args[2].AsString(), 0), 0);
@@ -618,8 +618,8 @@ namespace Assistant.Scripts
             if (DragDropManager.Holding != null)
             {
                 DragDropManager.Drop(DragDropManager.Holding, null,
-                    new Point3D((ushort)(World.Player.Position.X + x),
-                        (ushort)(World.Player.Position.Y + y), World.Player.Position.Z));
+                    new Point3D((ushort) (World.Player.Position.X + x),
+                        (ushort) (World.Player.Position.Y + y), World.Player.Position.Z));
             }
             else
             {
@@ -769,7 +769,7 @@ namespace Assistant.Scripts
 
             ScriptManager.LastWalk = DateTime.UtcNow;
 
-            Direction dir = (Direction)Enum.Parse(typeof(Direction), args[0].AsString(), true);
+            Direction dir = (Direction) Enum.Parse(typeof(Direction), args[0].AsString(), true);
             Client.Instance.RequestMove(dir);
 
             return true;
@@ -858,7 +858,7 @@ namespace Assistant.Scripts
 
             if (spell != null)
             {
-                spell.OnCast(new CastSpellFromMacro((ushort)spell.GetID()));
+                spell.OnCast(new CastSpellFromMacro((ushort) spell.GetID()));
             }
             else
             {
