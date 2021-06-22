@@ -24,6 +24,7 @@ using System.Text;
 using Assistant.Core;
 using Assistant.HotKeys;
 using Assistant.Scripts.Engine;
+using Assistant.Scripts.Helpers;
 using Assistant.UI;
 
 namespace Assistant.Scripts
