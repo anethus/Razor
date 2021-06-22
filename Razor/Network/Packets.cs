@@ -266,6 +266,15 @@ namespace Assistant
         }
     }
 
+    public sealed class RenamePacket : Packet
+    {
+        public RenamePacket(uint serial, string newName) : base(0x75, 35)
+        {
+            Write(serial);
+            WriteAsciiFixed(newName, 30);
+        }
+    }
+
     public sealed class TargetCancelResponse : Packet
     {
         public TargetCancelResponse(uint id) : base(0x6C, 19)

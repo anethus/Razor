@@ -46,6 +46,8 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("warmode", Warmode);
             Interpreter.RegisterCommandHandler("unsetvar", UnsetVar);
 
+            Interpreter.RegisterCommandHandler("rename", Rename);
+
             Interpreter.RegisterExpressionHandler("listexists", ListExists);
             Interpreter.RegisterExpressionHandler("list", ListLength);
             Interpreter.RegisterExpressionHandler("inlist", InList);
@@ -269,6 +271,26 @@ namespace Assistant.Scripts
             {
                 ScriptVariables.UnregisterVariable(name);
                 ScriptManager.RedrawScripts();
+            }
+
+            return true;
+        }
+
+        private static bool Rename(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length != 2)
+                throw new RunTimeError("Usage: rename (serial) (new_name)");
+
+            var newName = args[1].AsString();
+            if (newName.Length < 1)
+                throw new RunTimeError("Mobile name must be longer then 1 char");
+
+            if (World.Mobiles.TryGetValue(args[0].AsSerial(), out var follower))
+            {
+                if (follower.CanRename)
+                {
+                    World.Player.RenameMobile(follower.Serial, newName);
+                }
             }
 
             return true;
