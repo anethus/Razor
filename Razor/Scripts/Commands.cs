@@ -212,7 +212,7 @@ namespace Assistant.Scripts
                 return true;
             }
 
-            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { _setVarState = SetVarState.INITIAL_PROMPT; return true;});
+            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { _setVarState = SetVarState.INITIAL_PROMPT; return true; } );
 
             switch (_setVarState)
             {
@@ -412,7 +412,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static string[] hands = new string[4] { "left", "right", "both", "hands" };
+        private static string[] hands = new string[4] {"left", "right", "both", "hands"};
 
         private static bool ClearHands(string command, Variable[] args, bool quiet, bool force)
         {
