@@ -393,9 +393,8 @@ namespace Assistant.Scripts
             if (follower.Value.CanRename)
             {
                 World.Player.RenameMobile(follower.Value.Serial, newName);
-                return true;
             }
-            return false;
+            return true;
         }
 
         private static string[] abilities = new string[4] {"primary", "secondary", "stun", "disarm"};
