@@ -1111,6 +1111,11 @@ namespace Assistant
 
         //private UOEntity m_LastCtxM = null;
         //public UOEntity LastContextMenu { get { return m_LastCtxM; } set { m_LastCtxM = value; } }
+        
+        public void RenameMobile(Serial serial, string newName)
+        {
+            Client.Instance.SendToServer(new RenamePacket(serial.Value, newName));
+        }
 
         public bool UseItem(Item cont, ushort find)
         {

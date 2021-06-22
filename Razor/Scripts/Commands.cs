@@ -69,6 +69,9 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("promptresponse", PromptResponse); //PromptAction
             Interpreter.RegisterCommandHandler("waitforprompt", WaitForPrompt); //WaitForPromptAction
 
+            // Followers
+            Interpreter.RegisterCommandHandler("rename", Rename);
+
             // Hotkey execution
             Interpreter.RegisterCommandHandler("hotkey", Hotkey); //HotKeyAction
 
@@ -370,6 +373,28 @@ namespace Assistant.Scripts
                 return true;
             }
 
+            return false;
+        }
+
+        private static bool Rename(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length != 2)
+                throw new RunTimeError("Usage: rename (serial) (new_name)");
+
+            var newName = args[1].AsString();
+            if (newName.Length < 1)
+                throw new RunTimeError("Mobile name must be longer then 1 char");
+
+            var follower = World.Mobiles.FirstOrDefault(x => x.Key == args[0].AsSerial());
+
+            if (follower.Value == null)
+                throw new RunTimeError("Can't find mobile with passed serial");
+
+            if (follower.Value.CanRename)
+            {
+                World.Player.RenameMobile(follower.Value.Serial, newName);
+                return true;
+            }
             return false;
         }
 
