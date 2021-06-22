@@ -72,7 +72,7 @@ namespace Assistant.Scripts
             // Hotkey execution
             Interpreter.RegisterCommandHandler("hotkey", Hotkey); //HotKeyAction
 
-            
+
 
             Interpreter.RegisterCommandHandler("overhead", HeadMsg); //OverheadMessageAction
             Interpreter.RegisterCommandHandler("headmsg", HeadMsg); //OverheadMessageAction
@@ -94,6 +94,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("useskill", UseSkill); //SkillAction
             Interpreter.RegisterCommandHandler("walk", Walk); //Move/WalkAction
             Interpreter.RegisterCommandHandler("potion", Potion);
+            Interpreter.RegisterCommandHandler("setskill", SetSkill);
 
             // Script related
             Interpreter.RegisterCommandHandler("script", PlayScript);
@@ -211,7 +212,7 @@ namespace Assistant.Scripts
                 return true;
             }
 
-            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { _setVarState = SetVarState.INITIAL_PROMPT; return true; } );
+            Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { _setVarState = SetVarState.INITIAL_PROMPT; return true; });
 
             switch (_setVarState)
             {
@@ -373,7 +374,7 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static string[] abilities = new string[4] {"primary", "secondary", "stun", "disarm"};
+        private static string[] abilities = new string[4] { "primary", "secondary", "stun", "disarm" };
 
         private static bool SetAbility(string command, Variable[] args, bool quiet, bool force)
         {
@@ -411,7 +412,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static string[] hands = new string[4] {"left", "right", "both", "hands"};
+        private static string[] hands = new string[4] { "left", "right", "both", "hands" };
 
         private static bool ClearHands(string command, Variable[] args, bool quiet, bool force)
         {
@@ -480,7 +481,7 @@ namespace Assistant.Scripts
                 ushort id = Utility.ToUInt16(gfxStr, 0);
 
                 items = CommandHelper.GetItemsById(id, backpack, inRangeCheck);
-                
+
                 // Still no item? Mobile check!
                 if (items.Count == 0)
                 {
@@ -572,7 +573,7 @@ namespace Assistant.Scripts
                     to = new Point3D(World.Player.Position.X, World.Player.Position.Y, World.Player.Position.Z);
                     break;
                 case 2: // dropping on a layer
-                    layer = (Layer) Enum.Parse(typeof(Layer), args[1].AsString(), true);
+                    layer = (Layer)Enum.Parse(typeof(Layer), args[1].AsString(), true);
                     break;
                 case 3: // x y
                     to = new Point3D(Utility.ToInt32(args[1].AsString(), 0), Utility.ToInt32(args[2].AsString(), 0), 0);
@@ -617,8 +618,8 @@ namespace Assistant.Scripts
             if (DragDropManager.Holding != null)
             {
                 DragDropManager.Drop(DragDropManager.Holding, null,
-                    new Point3D((ushort) (World.Player.Position.X + x),
-                        (ushort) (World.Player.Position.Y + y), World.Player.Position.Z));
+                    new Point3D((ushort)(World.Player.Position.X + x),
+                        (ushort)(World.Player.Position.Y + y), World.Player.Position.Z));
             }
             else
             {
@@ -768,7 +769,7 @@ namespace Assistant.Scripts
 
             ScriptManager.LastWalk = DateTime.UtcNow;
 
-            Direction dir = (Direction) Enum.Parse(typeof(Direction), args[0].AsString(), true);
+            Direction dir = (Direction)Enum.Parse(typeof(Direction), args[0].AsString(), true);
             Client.Instance.RequestMove(dir);
 
             return true;
@@ -857,7 +858,7 @@ namespace Assistant.Scripts
 
             if (spell != null)
             {
-                spell.OnCast(new CastSpellFromMacro((ushort) spell.GetID()));
+                spell.OnCast(new CastSpellFromMacro((ushort)spell.GetID()));
             }
             else
             {
@@ -1150,6 +1151,39 @@ namespace Assistant.Scripts
             {
                 throw new RunTimeError($"{command} - Unknown potion type");
             }
+
+            return true;
+        }
+
+        private static readonly Dictionary<string, LockType> _lockTypeMap = new Dictionary<string, LockType>()
+        {
+            { "up", LockType.Up },
+            { "down", LockType.Down },
+            { "lock", LockType.Locked },
+
+        };
+
+        private static bool SetSkill(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length < 2)
+                throw new RunTimeError("Usage: setskill (skill_name) (UP/DOWN/LOCK)");
+
+            if(!_lockTypeMap.TryGetValue(args[1].AsString(), out var lockType))
+                throw new RunTimeError("Wrong set skill modifier - should be UP/DOWN/LOCK");
+
+            if(!SkillHotKeys.UsableSkillsByName.TryGetValue(args[0].AsString().ToLower(), out var skillId))
+            {
+                throw new RunTimeError("Wrong skill name");
+            }
+            
+            // Send Information to Server
+            Client.Instance.SendToServer(new SetSkillLock(skillId, lockType));
+
+            // Send Information to Client
+            var skill = World.Player.Skills[skillId];
+            skill.Lock = lockType;
+
+            Client.Instance.SendToClient(new SkillUpdate(skill));
 
             return true;
         }
