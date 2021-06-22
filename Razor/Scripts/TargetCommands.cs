@@ -117,7 +117,7 @@ namespace Assistant.Scripts
             if (args.Length < 1)
             {
                 throw new RunTimeError(
-                    "Usage: targettype (graphic) OR ('name of item or mobile type') [inrangecheck/backpack]");
+                    "Usage: targettype (graphic) OR ('name of item or mobile type') [src] [hue] [qty] [range]");
             }
 
             string gfxStr = args[0].AsString();
@@ -125,41 +125,28 @@ namespace Assistant.Scripts
             List<Item> items;
             List<Mobile> mobiles = new List<Mobile>();
 
-            bool inRangeCheck = false;
-            bool backpack = false;
-
-            if (args.Length == 2)
-            {
-                if (args[1].AsString().IndexOf("pack", StringComparison.InvariantCultureIgnoreCase) != -1)
-                {
-                    backpack = true;
-                }
-                else
-                {
-                    inRangeCheck = args[1].AsBool();
-                }
-            }
+            (Serial src, int hue, int qty, int range) = CommandHelper.ParseFindArguments(args);
 
             // No graphic id, maybe searching by name?
             if (gfx == 0)
             {
-                items = CommandHelper.GetItemsByName(gfxStr, backpack, inRangeCheck);
+                items = CommandHelper.GetItemsByName(gfxStr, hue, src, (short)qty, range);
 
                 if (items.Count == 0) // no item found, search mobile by name
                 {
-                    mobiles = CommandHelper.GetMobilesByName(gfxStr, inRangeCheck);
+                    mobiles = CommandHelper.GetMobilesByName(gfxStr, range);
                 }
             }
             else // Provided graphic id for type, check backpack first (same behavior as DoubleClickAction in macros
             {
                 ushort id = Utility.ToUInt16(gfxStr, 0);
 
-                items = CommandHelper.GetItemsById(id, backpack, inRangeCheck);
+                items = CommandHelper.GetItemsById(id, hue, src, (short)qty, range);
 
                 // Still no item? Mobile check!
                 if (items.Count == 0)
                 {
-                    mobiles = CommandHelper.GetMobilesById(id, inRangeCheck);
+                    mobiles = CommandHelper.GetMobilesById(id, range);
                 }
             }
 
