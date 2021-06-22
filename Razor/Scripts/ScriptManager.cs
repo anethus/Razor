@@ -913,6 +913,12 @@ namespace Assistant.Scripts
                 "unsetvar myvar\n");
             descriptionCommands.Add("unsetvar", tooltip);
 
+            tooltip = new ToolTipDescriptions("rename",
+                new[] { "rename ('serial') ('name')" }, "N/A",
+                "Rename a creature (one of your followers) with the provided name",
+                "rename mypet fido\n");
+            descriptionCommands.Add("rename", tooltip);
+
             #endregion
 
             if (!Config.GetBool("DisableScriptTooltips"))
