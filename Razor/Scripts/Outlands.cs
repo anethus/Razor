@@ -22,7 +22,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Assistant.Core;
+using Assistant.HotKeys;
 using Assistant.Scripts.Engine;
+using Assistant.UI;
 
 namespace Assistant.Scripts
 {
@@ -45,8 +47,8 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("getlabel", GetLabel);
             Interpreter.RegisterCommandHandler("warmode", Warmode);
             Interpreter.RegisterCommandHandler("unsetvar", UnsetVar);
-
             Interpreter.RegisterCommandHandler("rename", Rename);
+            Interpreter.RegisterCommandHandler("setskill", SetSkill);
 
             Interpreter.RegisterExpressionHandler("listexists", ListExists);
             Interpreter.RegisterExpressionHandler("list", ListLength);
@@ -292,6 +294,43 @@ namespace Assistant.Scripts
                     World.Player.RenameMobile(follower.Serial, newName);
                 }
             }
+
+            return true;
+        }
+
+        private static readonly Dictionary<string, LockType> _lockTypeMap = new Dictionary<string, LockType>()
+        {
+            { "up", LockType.Up },
+            { "down", LockType.Down },
+            { "lock", LockType.Locked },
+
+        };
+
+        private static bool SetSkill(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length < 2)
+                throw new RunTimeError("Usage: setskill (skill_name) (up/down/lock)");
+
+            if (!_lockTypeMap.TryGetValue(args[1].AsString(), out var lockType))
+                throw new RunTimeError("Invalid set skill modifier - should be up/down/lock");
+
+            int skillId;
+
+            if (!SkillHotKeys.UsableSkillsByName.TryGetValue(args[0].AsString().ToLower(), out skillId))
+            {
+                throw new RunTimeError("Invalid skill name");
+            }
+
+            // Send Information to Server
+            Client.Instance.SendToServer(new SetSkillLock(skillId, lockType));
+
+            // Update razor window
+            var skill = World.Player.Skills[skillId];
+            skill.Lock = lockType;
+            Assistant.Engine.MainWindow.SafeAction(s => s.RedrawSkills());
+
+            // Send Information to Client
+            Client.Instance.SendToClient(new SkillUpdate(skill));
 
             return true;
         }
