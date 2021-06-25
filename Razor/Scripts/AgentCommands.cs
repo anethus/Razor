@@ -37,6 +37,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("scav", ScavAgentCommand);
             Interpreter.RegisterCommandHandler("scavenger", ScavAgentCommand);
             Interpreter.RegisterCommandHandler("sell", SellAgentCommand);
+            Interpreter.RegisterCommandHandler("setsource", SetSource);
         }
 
         private static bool RestockAgentCommand(string command, Variable[] args, bool quiet, bool force)
@@ -200,6 +201,26 @@ namespace Assistant.Scripts
             return true;
         }
 
+        private static bool SetSource(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length != 2)
+                throw new RunTimeError("Usage: setsource (number) (serial)");
+
+            var agentNumber = args[0].AsInt();
+            var src = args[1].AsSerial();
+
+            var c = World.FindItem(src);
+
+            if (c == null || (c != null && !c.IsContainer))
+            {
+                throw new RunTimeError("Source is not container");
+            }
+
+            OrganizerAgent.Agents[agentNumber - 1].SetHotbagBySerial(false, c.Serial, quiet);
+            return true;
+        }
+
+        
         private static bool SellAgentCommand(string command, Variable[] args, bool quiet, bool force)
         {
             SellAgent.Instance.SetHotBag();

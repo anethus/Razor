@@ -296,13 +296,8 @@ namespace Assistant.Agents
             }
         }
 
-        private void OnTargetBag(bool location, Serial serial, Point3D loc, ushort gfx)
+        public void SetHotbagBySerial(bool location, Serial serial, bool quiet)
         {
-            if (Engine.MainWindow != null)
-            {
-                Engine.MainWindow.SafeAction(s => s.ShowMe());
-            }
-
             if (!location && serial > 0 && serial <= 0x7FFFFF00)
             {
                 Item bag = World.FindItem(m_Cont);
@@ -318,7 +313,7 @@ namespace Assistant.Agents
                     m_BagBTN.Text = Language.GetString(LocString.ClearHB);
                 }
 
-                if (World.Player != null)
+                if (World.Player != null && !quiet)
                 {
                     World.Player.SendMessage(MsgLevel.Force, LocString.ContSet);
                 }
@@ -330,6 +325,16 @@ namespace Assistant.Agents
                     bag.OPLChanged();
                 }
             }
+        }
+
+        private void OnTargetBag(bool location, Serial serial, Point3D loc, ushort gfx)
+        {
+            if (Engine.MainWindow != null)
+            {
+                Engine.MainWindow.SafeAction(s => s.ShowMe());
+            }
+
+            SetHotbagBySerial(location, serial, false);
         }
 
         public override void Clear()
