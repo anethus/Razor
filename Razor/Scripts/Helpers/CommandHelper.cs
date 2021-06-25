@@ -1,122 +1,145 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Assistant.Filters;
 using Assistant.Scripts.Engine;
 
 namespace Assistant.Scripts.Helpers
 {
     public static class CommandHelper
     {
-        /// <summary>
-        /// Common logic for dclicktype and targettype to find items by name
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="backpack"></param>
-        /// <param name="inRange"></param>
-        /// <returns></returns>
-        public static List<Item> GetItemsByName(string name, bool backpack, bool inRange)
+        private static List<Item> LookForItems(List<Item> items, int hue, short qt, Serial src, int range)
         {
-            List<Item> items = new List<Item>();
+            if (hue != -1)
+                items = items.Where(x => x.Hue == hue).ToList();
 
-            if (backpack && World.Player.Backpack != null) // search backpack only
-            {
-                Item i = World.Player.Backpack.FindItemByName(name, true);
+            if (qt != -1)
+                items = items.Where(x => x.Amount >= qt).ToList();
 
-                if (i != null)
-                    items.Add(i);
-            }
-            else if (inRange) // inrange includes both backpack and within 2 tiles
+            if (src != 0)
             {
-                items.AddRange(World.FindItemsByName(name).Where(item =>
-                    !item.IsInBank && (Utility.InRange(World.Player.Position, item.Position, 2) ||
-                                       item.RootContainer == World.Player)).ToList());
+                var tList = new List<Item>();
+                foreach (var item in items)
+                {
+                    switch (item.Container)
+                    {
+                        case Item i:
+                            if (i.Serial == src)
+                                tList.Add(item);
+                            break;
+                        case Mobile m:
+                            if (m.Serial == src)
+                                tList.Add(item);
+                            break;
+                        case Serial s:
+                            if (s.Value == src)
+                                tList.Add(item);
+                            break;
+                    }
+                }
+                items = tList;
+
+                if (range != -1)
+                    items = items.Where(item => !item.IsInBank && Utility.InRange(World.Player.Position, item.Position, range)).ToList();
             }
             else
             {
-                items.AddRange(World.FindItemsByName(name).Where(item => !item.IsInBank).ToList());
+                items = items.Where(x => x.Container == null).ToList();
             }
-
             return items;
         }
-
         /// <summary>
-        /// Common logic for dclicktype and targettype to find items by id
+        /// Get Item By Name 
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="backpack"></param>
-        /// <param name="inRange"></param>
+        /// <param name="name">Name or graphic id</param>
+        /// <param name="hue">Hue number</param>
+        /// <param name="src">Source name</param>
+        /// <param name="qt">Quantity</param>
+        /// <param name="range">Range</param>
         /// <returns></returns>
-        public static List<Item> GetItemsById(ushort id, bool backpack, bool inRange)
+        public static List<Item> GetItemsByName2(string name, int hue, Serial src, short qt, int range)
         {
-            List<Item> items = new List<Item>();
+            var items = new List<Item>();
 
-            if (backpack && World.Player.Backpack != null)
-            {
-                Item i = World.Player.Backpack.FindItemByID(id);
+            items.AddRange(World.FindItemsByName(name));
 
-                if (i != null)
-                    items.Add(i);
-            } 
-            else if (inRange)
+            return LookForItems(items, hue, qt, src, range);
+        }
+
+        public static List<Item> GetItemsById(ushort id, int hue, Serial src, short qt, int range)
+        {
+            var items = new List<Item>();
+
+            items.AddRange(World.FindItemsById(id));
+
+            return LookForItems(items, hue, qt, src, range);
+        }
+
+        public static List<Mobile> GetMobilesByName(string name, int range)
+        {
+            IEnumerable<Mobile> mobiles = World.FindMobilesByName(name);
+            
+            if (range != -1)
             {
-                items.AddRange(World.FindItemsById(id).Where(item =>
-                    !item.IsInBank && (Utility.InRange(World.Player.Position, item.Position, 2) ||
-                                       item.RootContainer == World.Player)).ToList());
+                mobiles = mobiles.Where(m => Utility.InRange(World.Player.Position, m.Position, range));
             }
-            else
-            {
-                items.AddRange(World.FindItemsById(id).Where(item => !item.IsInBank).ToList());
-            }
 
-            return items;
+            return mobiles.ToList();
+        }
+
+        public static List<Mobile> GetMobilesById(ushort id, int range)
+        {
+            var mobiles = World.MobilesInRange().Where(m => m.Body == id).ToList();
+
+            if (range != -1)
+                mobiles = mobiles.Where(m => Utility.InRange(World.Player.Position, m.Position, range)).ToList();
+
+            return mobiles.ToList();
         }
 
         /// <summary>
-        /// Common logic for dclicktype and targettype to find mobiles by name
+        /// Check if passed string is number and assign out variable to that number
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="inRange"></param>
-        /// <returns></returns>
-        public static List<Mobile> GetMobilesByName(string name, bool inRange)
+        /// <param name="sNumber">String with number</param>
+        private static int IsNumberOrAny(string sNumber)
         {
-            List<Mobile> mobiles;
-
-            if (inRange)
+            var num = Utility.ToUInt16(sNumber, 0);
+            if (num != 0)
             {
-                mobiles = World.FindMobilesByName(name)
-                    .Where(m => Utility.InRange(World.Player.Position, m.Position, 2)).ToList();
-            }
-            else
-            {
-                mobiles = World.FindMobilesByName(name);
+                return num;
             }
 
-            return mobiles;
+            if (sNumber.ToLower() == "any")
+            {
+                throw new RunTimeError("Wrong parameter");
+            }
+
+            return -1;
         }
 
         /// <summary>
-        /// Common logic for dclicktype and targettype to find mobiles by id
+        /// Deconstruct arguments
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="inRange"></param>
-        /// <returns></returns>
-        public static List<Mobile> GetMobilesById(ushort id, bool inRange)
+        /// <param name="args">Array with arguments</param>
+        public static (int, Serial, int, int) ParseFindArguments(Variable[] args)
         {
-            List<Mobile> mobiles;
+            int[] result = { -1, -1, -1 };
 
-            if (inRange)
+            if (args.Length > 1)
             {
-                mobiles = World.MobilesInRange()
-                    .Where(m => Utility.InRange(World.Player.Position, m.Position, 2) && m.Body == id).ToList();
+                result[0] = IsNumberOrAny(args[1].AsString());
             }
-            else
+            Serial src = args.Length > 2 ? args[2].AsSerial() : World.Player.Backpack.Serial.Value;
+
+            if (args.Length > 3)
             {
-                mobiles = World.MobilesInRange().Where(m => m.Body == id).ToList();
+                result[1] = IsNumberOrAny(args[3].AsString());
+            }
+            if (args.Length > 4)
+            {
+                result[2] = IsNumberOrAny(args[4].AsString());
             }
 
-            return mobiles;
+            return (result[0], src, result[1], result[2]);
         }
 
         public static void SendWarning(string command, string message, bool quiet)
