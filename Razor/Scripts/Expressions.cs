@@ -114,7 +114,7 @@ namespace Assistant.Scripts
             // No graphic id, maybe searching by name?
             if (gfx == 0)
             {
-                items = CommandHelper.GetItemsByName2(gfxStr, hue, src, (short)qty, range);
+                items = CommandHelper.GetItemsByName(gfxStr, hue, src, (short)qty, range);
 
                 if (items.Count == 0) // no item found, search mobile by name
                 {

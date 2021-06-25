@@ -56,7 +56,7 @@ namespace Assistant.Scripts.Helpers
         /// <param name="qt">Quantity</param>
         /// <param name="range">Range</param>
         /// <returns></returns>
-        public static List<Item> GetItemsByName2(string name, int hue, Serial src, short qt, int range)
+        public static List<Item> GetItemsByName(string name, int hue, Serial src, short qt, int range)
         {
             var items = new List<Item>();
 
@@ -76,7 +76,7 @@ namespace Assistant.Scripts.Helpers
 
         public static List<Mobile> GetMobilesByName(string name, int range)
         {
-            IEnumerable<Mobile> mobiles = World.FindMobilesByName(name);
+            IEnumerable<Mobile> mobiles = World.FindMobilesByName(name).Where(m =>  !m.IsGhost && !m.IsHuman);
             
             if (range != -1)
             {
@@ -88,7 +88,7 @@ namespace Assistant.Scripts.Helpers
 
         public static List<Mobile> GetMobilesById(ushort id, int range)
         {
-            var mobiles = World.MobilesInRange().Where(m => m.Body == id).ToList();
+            var mobiles = World.MobilesInRange().Where(m => m.Body == id && !m.IsGhost && !m.IsHuman).ToList();
 
             if (range != -1)
                 mobiles = mobiles.Where(m => Utility.InRange(World.Player.Position, m.Position, range)).ToList();
