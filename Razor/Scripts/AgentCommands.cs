@@ -201,6 +201,14 @@ namespace Assistant.Scripts
             return true;
         }
 
+        /// <summary>
+        /// SetSource command that will replace HotBag Serial for specific agent
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="args"></param>
+        /// <param name="quiet"></param>
+        /// <param name="force"></param>
+        /// <returns></returns>
         private static bool SetSource(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 2)
