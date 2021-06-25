@@ -60,6 +60,8 @@ namespace Assistant.Scripts
 
             Interpreter.RegisterExpressionHandler("followers", Followers);
             Interpreter.RegisterExpressionHandler("hue", Hue);
+
+            Interpreter.RegisterExpressionHandler("findlayer", FindLayer);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -341,6 +343,54 @@ namespace Assistant.Scripts
                 return 0;
 
             return item.Hue;
+        }
+
+        private static Dictionary<string, Layer> _layerMap = new Dictionary<string, Layer>()
+        {
+            {"righthand", Layer.RightHand},
+            {"lefthand", Layer.LeftHand},
+            {"Shoes", Layer.Shoes},
+            {"pants", Layer.Pants},
+            {"shirt", Layer.Shirt},
+            {"head", Layer.Head},
+            {"gloves", Layer.Gloves},
+            {"ring", Layer.Ring},
+            {"talisman", Layer.Talisman},
+            {"neck", Layer.Neck},
+            {"hair", Layer.Hair},
+            {"waist", Layer.Waist},
+            {"innertorso", Layer.InnerTorso},
+            {"bracelet", Layer.Bracelet},
+            {"face", Layer.Face},
+            {"facialhair", Layer.FacialHair},
+            {"middletorso", Layer.MiddleTorso},
+            {"earrings", Layer.Earrings},
+            {"arms", Layer.Arms},
+            {"cloak", Layer.Cloak},
+            {"backpack", Layer.Backpack},
+            {"outertorso", Layer.OuterTorso},
+            {"outerlegs", Layer.OuterLegs},
+            {"innerlegs", Layer.InnerLegs},
+        };
+
+        private static bool FindLayer(string expression, Variable[] args, bool quiet)
+        {
+            if (args.Length != 2)
+                throw new RunTimeError("Usage: findlayer (serial) (layer)");
+            
+            var serial = args[0].AsSerial();
+
+            if (!_layerMap.TryGetValue(args[1].AsString(), out var layerName))
+                throw new RunTimeError("Wrong layer name");
+
+            var layerItem = World.Player.GetItemOnLayer(layerName);
+
+            if (layerItem == null)
+            {
+                return false;
+            }
+
+            return layerItem.Serial == serial;
         }
     }
 }
