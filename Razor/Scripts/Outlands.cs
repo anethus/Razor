@@ -61,6 +61,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("followers", Followers);
             Interpreter.RegisterExpressionHandler("hue", Hue);
             Interpreter.RegisterExpressionHandler("name", GetName);
+            Interpreter.RegisterExpressionHandler("findlayer", FindLayer);
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
@@ -476,6 +477,57 @@ namespace Assistant.Scripts
             }
 
             return _notorietyMap[m.Notoriety];
+        }
+
+        private static readonly Dictionary<string, Layer> _layerMap = new Dictionary<string, Layer>()
+        {
+            {"righthand", Layer.RightHand},
+            {"lefthand", Layer.LeftHand},
+            {"shoes", Layer.Shoes},
+            {"pants", Layer.Pants},
+            {"shirt", Layer.Shirt},
+            {"head", Layer.Head},
+            {"gloves", Layer.Gloves},
+            {"ring", Layer.Ring},
+            {"talisman", Layer.Talisman},
+            {"neck", Layer.Neck},
+            {"hair", Layer.Hair},
+            {"waist", Layer.Waist},
+            {"innertorso", Layer.InnerTorso},
+            {"bracelet", Layer.Bracelet},
+            {"face", Layer.Face},
+            {"facialhair", Layer.FacialHair},
+            {"middletorso", Layer.MiddleTorso},
+            {"earrings", Layer.Earrings},
+            {"arms", Layer.Arms},
+            {"cloak", Layer.Cloak},
+            {"backpack", Layer.Backpack},
+            {"outertorso", Layer.OuterTorso},
+            {"outerlegs", Layer.OuterLegs},
+            {"innerlegs", Layer.InnerLegs},
+        };
+
+        private static uint FindLayer(string expression, Variable[] args, bool quiet)
+        {
+            if (args.Length != 2)
+                throw new RunTimeError("Usage: findlayer (serial) (layer)");
+
+            var serial = args[0].AsSerial();
+
+            var m = World.FindMobile(serial);
+
+            if (m == null)
+                throw new RunTimeError("Can't find mobile");
+
+            if (!_layerMap.TryGetValue(args[1].AsString(), out var layerName))
+                throw new RunTimeError("Invalid layer name");
+
+            var layerItem = m.GetItemOnLayer(layerName);
+
+            if (layerItem == null)
+                return Serial.MinusOne;
+
+            return layerItem.Serial;
         }
     }
 }
