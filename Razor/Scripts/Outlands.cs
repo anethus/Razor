@@ -19,15 +19,12 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using Assistant.Core;
 using Assistant.HotKeys;
 using Assistant.Scripts.Engine;
-using Assistant.Scripts.Helpers;
+using Assistant.UI;
 
 namespace Assistant.Scripts
 {
@@ -50,6 +47,8 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("getlabel", GetLabel);
             Interpreter.RegisterCommandHandler("warmode", Warmode);
             Interpreter.RegisterCommandHandler("unsetvar", UnsetVar);
+            Interpreter.RegisterCommandHandler("rename", Rename);
+            Interpreter.RegisterCommandHandler("setskill", SetSkill);
 
             Interpreter.RegisterExpressionHandler("listexists", ListExists);
             Interpreter.RegisterExpressionHandler("list", ListLength);
@@ -60,6 +59,11 @@ namespace Assistant.Scripts
 
             Interpreter.RegisterExpressionHandler("followers", Followers);
             Interpreter.RegisterExpressionHandler("hue", Hue);
+
+            // Mobile flags
+            Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
+            Interpreter.RegisterExpressionHandler("blessed", Blessed);
+            Interpreter.RegisterExpressionHandler("warmode", InWarmode);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -274,6 +278,63 @@ namespace Assistant.Scripts
             return true;
         }
 
+        private static bool Rename(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length != 2)
+                throw new RunTimeError("Usage: rename (serial) (new_name)");
+
+            var newName = args[1].AsString();
+            if (newName.Length < 1)
+                throw new RunTimeError("Mobile name must be longer then 1 char");
+
+            if (World.Mobiles.TryGetValue(args[0].AsSerial(), out var follower))
+            {
+                if (follower.CanRename)
+                {
+                    World.Player.RenameMobile(follower.Serial, newName);
+                }
+            }
+
+            return true;
+        }
+
+        private static readonly Dictionary<string, LockType> _lockTypeMap = new Dictionary<string, LockType>()
+        {
+            { "up", LockType.Up },
+            { "down", LockType.Down },
+            { "lock", LockType.Locked },
+
+        };
+
+        private static bool SetSkill(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length < 2)
+                throw new RunTimeError("Usage: setskill (skill_name) (up/down/lock)");
+
+            if (!_lockTypeMap.TryGetValue(args[1].AsString(), out var lockType))
+                throw new RunTimeError("Invalid set skill modifier - should be up/down/lock");
+
+            int skillId;
+
+            if (!SkillHotKeys.UsableSkillsByName.TryGetValue(args[0].AsString().ToLower(), out skillId))
+            {
+                throw new RunTimeError("Invalid skill name");
+            }
+
+            // Send Information to Server
+            Client.Instance.SendToServer(new SetSkillLock(skillId, lockType));
+
+            // Update razor window
+            var skill = World.Player.Skills[skillId];
+            skill.Lock = lockType;
+            Assistant.Engine.MainWindow.SafeAction(s => s.RedrawSkills());
+
+            // Send Information to Client
+            Client.Instance.SendToClient(new SkillUpdate(skill));
+
+            return true;
+        }
+
         private static bool ListExists(string expression, Variable[] args, bool quiet)
         {
             if (args.Length != 1)
@@ -341,6 +402,30 @@ namespace Assistant.Scripts
                 return 0;
 
             return item.Hue;
+        }
+
+        private static bool Paralyzed(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return false;
+
+            return World.Player.Paralyzed;
+        }
+
+        private static bool Blessed(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return false;
+
+            return World.Player.Blessed;
+        }
+
+        private static bool InWarmode(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return false;
+
+            return World.Player.Warmode;
         }
     }
 }
