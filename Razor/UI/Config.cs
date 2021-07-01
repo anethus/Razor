@@ -749,7 +749,6 @@ namespace Assistant
             { }
             finally
             {
-                SaveAppSettings();
             }
         }
 
