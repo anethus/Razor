@@ -59,6 +59,7 @@ namespace Assistant.Scripts
 
             Interpreter.RegisterExpressionHandler("followers", Followers);
             Interpreter.RegisterExpressionHandler("hue", Hue);
+            Interpreter.RegisterExpressionHandler("name", GetName);
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
@@ -402,6 +403,14 @@ namespace Assistant.Scripts
                 return 0;
 
             return item.Hue;
+        }
+
+        private static string GetName(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return null;
+
+            return World.Player.Name;
         }
 
         private static bool Paralyzed(string expression, Variable[] args, bool quiet)
