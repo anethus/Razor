@@ -92,7 +92,6 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("useskill", UseSkill); //SkillAction
             Interpreter.RegisterCommandHandler("walk", Walk); //Move/WalkAction
             Interpreter.RegisterCommandHandler("potion", Potion);
-            Interpreter.RegisterCommandHandler("setskill", SetSkill);
 
             // Script related
             Interpreter.RegisterCommandHandler("script", PlayScript);
@@ -1136,39 +1135,6 @@ namespace Assistant.Scripts
             {
                 throw new RunTimeError($"{command} - Unknown potion type");
             }
-
-            return true;
-        }
-
-        private static readonly Dictionary<string, LockType> _lockTypeMap = new Dictionary<string, LockType>()
-        {
-            { "up", LockType.Up },
-            { "down", LockType.Down },
-            { "lock", LockType.Locked },
-
-        };
-
-        private static bool SetSkill(string command, Variable[] args, bool quiet, bool force)
-        {
-            if (args.Length < 2)
-                throw new RunTimeError("Usage: setskill (skill_name) (UP/DOWN/LOCK)");
-
-            if(!_lockTypeMap.TryGetValue(args[1].AsString(), out var lockType))
-                throw new RunTimeError("Wrong set skill modifier - should be UP/DOWN/LOCK");
-
-            if(!SkillHotKeys.UsableSkillsByName.TryGetValue(args[0].AsString().ToLower(), out var skillId))
-            {
-                throw new RunTimeError("Wrong skill name");
-            }
-            
-            // Send Information to Server
-            Client.Instance.SendToServer(new SetSkillLock(skillId, lockType));
-
-            // Send Information to Client
-            var skill = World.Player.Skills[skillId];
-            skill.Lock = lockType;
-
-            Client.Instance.SendToClient(new SkillUpdate(skill));
 
             return true;
         }
