@@ -66,6 +66,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
             Interpreter.RegisterExpressionHandler("blessed", Blessed);
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
+            Interpreter.RegisterExpressionHandler("noto", Notoriety);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -436,6 +437,45 @@ namespace Assistant.Scripts
                 return false;
 
             return World.Player.Warmode;
+        }
+
+        /**
+            * Notoriety
+            0x1: Innocent (Blue)
+            0x2: Friend (Green)
+            0x3: Gray (Gray - Animal)
+            0x4: Criminal (Gray)
+            0x5: Enemy (Orange)
+            0x6: Murderer (Red)
+            0x7: Invulnerable (Yellow)
+         */
+        private static Dictionary<byte, string> _notorietyMap = new Dictionary<byte, string>
+        {
+            { 1, "innocent" },
+            { 2, "friend" },
+            { 3, "hostile" },
+            { 4, "criminal" },
+            { 5, "enemy" },
+            { 6, "murderer" },
+            { 7, "invulnerable" }
+        };
+
+        private static string Notoriety(string expression, Variable[] args, bool quiet)
+        {
+            if (args.Length != 1)
+                throw new RunTimeError("Usage: noto (serial)");
+
+            var target = args[0].AsSerial();
+
+            var m = World.FindMobile(target);
+
+            if (m == null)
+            {
+                CommandHelper.SendWarning(expression, $"Mobile '{target}' not found", quiet);
+                return string.Empty;
+            }
+
+            return _notorietyMap[m.Notoriety];
         }
     }
 }
