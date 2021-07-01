@@ -216,8 +216,10 @@ namespace Assistant.Scripts
 
         private static bool Poisoned(string expression, Variable[] args, bool quiet)
         {
-            return World.Player != null && Client.Instance.AllowBit(FeatureBit.BlockHealPoisoned) &&
-                   World.Player.Poisoned;
+            if (World.Player == null)
+                return false;
+
+            return World.Player.Poisoned;
         }
 
         private static bool Hidden(string expression, Variable[] args, bool quiet)
