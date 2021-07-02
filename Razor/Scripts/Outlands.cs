@@ -345,7 +345,7 @@ namespace Assistant.Scripts
             return item.Hue;
         }
 
-        private static Dictionary<string, Layer> _layerMap = new Dictionary<string, Layer>()
+        private static readonly Dictionary<string, Layer> _layerMap = new Dictionary<string, Layer>()
         {
             {"righthand", Layer.RightHand},
             {"lefthand", Layer.LeftHand},
@@ -383,7 +383,7 @@ namespace Assistant.Scripts
             var m = World.FindMobile(serial);
 
             if (m == null)
-                throw new RunTimeError("Cand find mobile");
+                throw new RunTimeError("Can't find mobile");
 
             if (!_layerMap.TryGetValue(args[1].AsString(), out var layerName))
                 throw new RunTimeError("Wrong layer name");
