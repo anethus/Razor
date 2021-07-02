@@ -156,8 +156,8 @@ namespace Assistant.Scripts.Helpers
         /// <param name="sNumber">String with number</param>
         private static int IsNumberOrAny(string sNumber)
         {
-            var num = Utility.ToInt32(sNumber, 0);
-            if (num != 0)
+            var num = Utility.ToInt32(sNumber, -2);
+            if (num != -2)
             {
                 return num;
             }
@@ -174,26 +174,31 @@ namespace Assistant.Scripts.Helpers
         /// Deconstruct arguments
         /// </summary>
         /// <param name="args">Array with arguments</param>
-        public static (int, Serial, int, int) ParseFindArguments(Variable[] args)
+        public static (Serial, int, int, int) ParseFindArguments(Variable[] args)
         {
             int[] result = { -1, -1, -1 };
 
-            if (args.Length > 1)
-            {
-                result[0] = IsNumberOrAny(args[1].AsString());
-            }
-            Serial src = args.Length > 2 ? args[2].AsSerial() : World.Player.Backpack.Serial.Value;
+            Serial src = args.Length > 2 ? args[1].AsSerial() : World.Player.Backpack.Serial.Value;
 
+            // Hue
+            if (args.Length > 2)
+            {
+                result[0] = IsNumberOrAny(args[2].AsString());
+            }
+
+            // Qty
             if (args.Length > 3)
             {
                 result[1] = IsNumberOrAny(args[3].AsString());
             }
+
+            // Range
             if (args.Length > 4)
             {
                 result[2] = IsNumberOrAny(args[4].AsString());
             }
 
-            return (result[0], src, result[1], result[2]);
+            return (src, result[0], result[1], result[2]);
         }
 
         public static void SendWarning(string command, string message, bool quiet)
