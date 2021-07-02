@@ -34,6 +34,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterAliasHandler("righthand", RightHand);
             Interpreter.RegisterAliasHandler("lefthand", LeftHand);
             Interpreter.RegisterAliasHandler("hand", Hand);
+            Interpreter.RegisterAliasHandler("ground", Ground);
         }
 
         private static uint RightHand(string alias)
@@ -61,6 +62,11 @@ namespace Assistant.Scripts
             return World.Player != null && item != null
                 ? (uint)item.Serial
                 : 0;
+        }
+
+        private static uint Ground(string alias)
+        {
+            return 0;
         }
 
         private static uint Backpack(string alias)
