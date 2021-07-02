@@ -46,7 +46,7 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
-                if (range != 0 && !Utility.InRange(World.Player.Position, item.Position, range))
+                if (range > 0 && !Utility.InRange(World.Player.Position, item.Position, range))
                 {
                     continue;
                 }
@@ -156,7 +156,7 @@ namespace Assistant.Scripts.Helpers
         /// <param name="sNumber">String with number</param>
         private static int IsNumberOrAny(string sNumber)
         {
-            var num = Utility.ToUInt16(sNumber, 0);
+            var num = Utility.ToInt32(sNumber, 0);
             if (num != 0)
             {
                 return num;
