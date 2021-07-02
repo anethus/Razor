@@ -440,7 +440,7 @@ namespace Assistant.Scripts
             if (args.Length == 0)
             {
                 throw new RunTimeError(
-                    "Usage: dclicktype ('name of item') OR (graphicID) [hue] [src] [qty] [range]");
+                    "Usage: dclicktype ('name of item') OR (graphicID) [src] [hue] [qty] [range]");
             }
 
             string gfxStr = args[0].AsString();
@@ -448,7 +448,7 @@ namespace Assistant.Scripts
             List<Item> items;
             List<Mobile> mobiles = new List<Mobile>();
 
-            (int hue, Serial src, int qty, int range) = CommandHelper.ParseFindArguments(args);
+            (Serial src, int hue, int qty, int range) = CommandHelper.ParseFindArguments(args);
 
             // No graphic id, maybe searching by name?
             if (gfx == 0)

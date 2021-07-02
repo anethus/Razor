@@ -99,7 +99,7 @@ namespace Assistant.Scripts
         {
             if (args.Length == 0)
             {
-                throw new RunTimeError("Usage: findtype ('name of item') OR ('graphic') [hue] [src] [qty] [range]");
+                throw new RunTimeError("Usage: findtype ('name of item') OR ('graphic') [src] [hue] [qty] [range]");
             }
 
             string gfxStr = args[0].AsString();
@@ -107,7 +107,7 @@ namespace Assistant.Scripts
             List<Item> items;
             List<Mobile> mobiles;
 
-            (int hue, Serial src, int qty, int range) = CommandHelper.ParseFindArguments(args);
+            (Serial src, int hue, int qty, int range) = CommandHelper.ParseFindArguments(args);
 
             // No graphic id, maybe searching by name?
             if (gfx == 0)

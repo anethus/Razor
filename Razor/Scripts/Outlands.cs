@@ -24,6 +24,7 @@ using System.Text;
 using Assistant.Core;
 using Assistant.HotKeys;
 using Assistant.Scripts.Engine;
+using Assistant.Scripts.Helpers;
 using Assistant.UI;
 
 namespace Assistant.Scripts
@@ -469,7 +470,10 @@ namespace Assistant.Scripts
             var m = World.FindMobile(target);
 
             if (m == null)
-                throw new RunTimeError("Can't find mobile with given serial");
+            {
+                CommandHelper.SendWarning(expression, $"Mobile '{target}' not found", quiet);
+                return string.Empty;
+            }
 
             return _notorietyMap[m.Notoriety];
         }
