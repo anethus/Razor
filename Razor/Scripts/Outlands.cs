@@ -373,24 +373,29 @@ namespace Assistant.Scripts
             {"innerlegs", Layer.InnerLegs},
         };
 
-        private static bool FindLayer(string expression, Variable[] args, bool quiet)
+        private static int FindLayer(string expression, Variable[] args, bool quiet)
         {
             if (args.Length != 2)
-                throw new RunTimeError("Usage: findlayer (serial) (layer)");
+                throw new RunTimeError("Usage: findlayer (target_serial) (layer)");
             
             var serial = args[0].AsSerial();
+
+            var m = World.FindMobile(serial);
+
+            if (m == null)
+                throw new RunTimeError("Cand find mobile");
 
             if (!_layerMap.TryGetValue(args[1].AsString(), out var layerName))
                 throw new RunTimeError("Wrong layer name");
 
-            var layerItem = World.Player.GetItemOnLayer(layerName);
+            var layerItem = m.GetItemOnLayer(layerName);
 
             if (layerItem == null)
             {
-                return false;
+                return -1;
             }
 
-            return layerItem.Serial == serial;
+            return layerItem.Serial;
         }
     }
 }
