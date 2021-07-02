@@ -162,7 +162,7 @@ namespace Assistant.Scripts.Helpers
                 return num;
             }
 
-            if (sNumber.ToLower() == "any")
+            if (sNumber.ToLower() != "any")
             {
                 throw new RunTimeError("Wrong parameter");
             }
