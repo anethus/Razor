@@ -15,8 +15,8 @@ namespace Assistant.Scripts.Helpers
                 {
                     continue;
                 }
-
-                if (qt != -1 && item.Amount < qt)
+                // For items that are not stackable Amount is equal 0
+                if (qt > 1 && item.Amount < qt)
                 {
                     continue;
                 }
@@ -46,7 +46,7 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
-                if (range > 0 && !Utility.InRange(World.Player.Position, item.Position, range))
+                if (range > 0 && src <= 0 && !Utility.InRange(World.Player.Position, item.Position, range))
                 {
                     continue;
                 }
