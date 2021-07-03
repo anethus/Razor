@@ -652,8 +652,8 @@ namespace Assistant.Scripts
             descriptionCommands.Add("lift", tooltip);
 
             tooltip = new ToolTipDescriptions("lifttype",
-                new[] { "lifttype (gfx) [amount] or lifttype ('name of item') [amount]" }, "N/A",
-                "This command will lift a specific item by type either by the graphic id or by the name.\n\tIf no amount is provided, 1 is defaulted.",
+                new[] { "lifttype (name) OR (graphic) [amount] [src] [hue]" }, "N/A",
+                "This command will lift a specific item by type either by the graphic id or by the name.\n\tIf no amount is provided, 1 is defaulted.\n\tSrc parameter can be 'ground','self' or 'backpack'",
                 "lifttype 'robe'\n\twait 1000\n\tdroprelloc 1 1 0\n\tlifttype 0x1FCD\n\twait 1000\n\tdroprelloc 1 1");
             descriptionCommands.Add("lifttype", tooltip);
 

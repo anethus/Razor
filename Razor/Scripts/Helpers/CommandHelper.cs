@@ -154,7 +154,7 @@ namespace Assistant.Scripts.Helpers
         /// Check if passed string is number and assign out variable to that number
         /// </summary>
         /// <param name="sNumber">String with number</param>
-        private static int IsNumberOrAny(string sNumber)
+        public static int IsNumberOrAny(string sNumber)
         {
             var num = Utility.ToInt32(sNumber, -2);
             if (num != -2)
