@@ -70,7 +70,7 @@ namespace Assistant.Scripts
             // Hotkey execution
             Interpreter.RegisterCommandHandler("hotkey", Hotkey); //HotKeyAction
 
-            
+
 
             Interpreter.RegisterCommandHandler("overhead", HeadMsg); //OverheadMessageAction
             Interpreter.RegisterCommandHandler("headmsg", HeadMsg); //OverheadMessageAction
@@ -440,7 +440,7 @@ namespace Assistant.Scripts
             if (args.Length == 0)
             {
                 throw new RunTimeError(
-                    "Usage: dclicktype ('name of item') OR (graphicID) [hue] [src] [qty] [range]");
+                    "Usage: dclicktype ('name of item') OR (graphicID) [src] [hue] [qty] [range]");
             }
 
             string gfxStr = args[0].AsString();
@@ -448,7 +448,7 @@ namespace Assistant.Scripts
             List<Item> items;
             List<Mobile> mobiles = new List<Mobile>();
 
-            (int hue, Serial src, int qty, int range) = CommandHelper.ParseFindArguments(args);
+            (Serial src, int hue, int qty, int range) = CommandHelper.ParseFindArguments(args);
 
             // No graphic id, maybe searching by name?
             if (gfx == 0)
@@ -675,16 +675,33 @@ namespace Assistant.Scripts
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError("Usage: lifttype (gfx/'name of item') [amount]");
+                throw new RunTimeError("Usage: lifttype ('name') OR ('graphic') [amount] [src] [hue]");
             }
 
             string gfxStr = args[0].AsString();
             ushort gfx = Utility.ToUInt16(gfxStr, 0);
             ushort amount = 1;
+            Serial src = World.Player.Backpack.Serial;
+            int hue = -1;
 
-            if (args.Length == 2)
+            if (args.Length > 1)
             {
                 amount = Utility.ToUInt16(args[1].AsString(), 1);
+            }
+
+            if (args.Length > 2)
+            {
+                var tSrc = args[2].AsSerial();
+                if (tSrc != 0 && tSrc != World.Player.Backpack.Serial && tSrc != World.Player.Serial)
+                {
+                    throw new RunTimeError("src can be only 'ground', 'backpack' or 'self'");
+                }
+                src = tSrc;
+            }
+
+            if (args.Length > 3)
+            {
+                hue = CommandHelper.IsNumberOrAny(args[3].AsString());
             }
 
             if (_lastLiftTypeId > 0)
@@ -709,7 +726,7 @@ namespace Assistant.Scripts
                 // No graphic id, maybe searching by name?
                 if (gfx == 0)
                 {
-                    item = World.Player.Backpack?.FindItemByName(gfxStr, true);
+                    item = CommandHelper.GetItemsByName(gfxStr, hue, src, (short)amount, 3).FirstOrDefault();
 
                     if (item == null)
                     {
@@ -719,7 +736,7 @@ namespace Assistant.Scripts
                 }
                 else
                 {
-                    item = World.Player.Backpack?.FindItemByID(gfx);
+                    item = CommandHelper.GetItemsById(gfx, hue, src, (short)amount, 3).FirstOrDefault();
                 }
 
                 if (item != null)
@@ -1145,7 +1162,7 @@ namespace Assistant.Scripts
             {
                 throw new RunTimeError("Usage: waitforsysmsg 'message to wait for' [timeout]");
             }
-            
+
             if (SystemMessages.Exists(args[0].AsString()))
             {
                 Interpreter.ClearTimeout();
@@ -1177,7 +1194,7 @@ namespace Assistant.Scripts
 
             return true;
         }
-        
+
         private static bool Interrupt(string command, Variable[] args, bool quiet, bool force)
         {
             Spell.Interrupt();
