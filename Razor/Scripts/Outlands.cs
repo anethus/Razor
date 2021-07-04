@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Assistant.Core;
 using Assistant.HotKeys;
@@ -62,6 +63,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("hue", Hue);
             Interpreter.RegisterExpressionHandler("name", GetName);
             Interpreter.RegisterExpressionHandler("findlayer", FindLayer);
+            Interpreter.RegisterExpressionHandler("find", Find);
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
@@ -528,6 +530,43 @@ namespace Assistant.Scripts
                 return Serial.MinusOne;
 
             return layerItem.Serial;
+        }
+
+        private static uint Find(string expression, Variable[] args, bool quiet)
+        {
+            if (args.Length == 0)
+            {
+                throw new RunTimeError("Usage: find ('serial') [src] [hue] [qty] [range]");
+            }
+
+            var serial = args[0].AsSerial();
+            
+            (Serial src, int hue, int qty, int range) = CommandHelper.ParseFindArguments(args);
+
+            // Check if is a mobile
+            if(World.Mobiles.TryGetValue(serial, out var m))
+            {
+                // Check hue
+                if(hue != -1 && m.Hue != hue)
+                {
+                    return Serial.Zero;
+                }
+                // Check range
+                if(range != -1)
+                {
+                    return Utility.InRange(World.Player.Position, m.Position, range) ? m.Serial : Serial.Zero;
+                }
+                //When all passed args are default just retrun it
+                return m.Serial;
+            }
+            if(World.Items.TryGetValue(serial, out var i))
+            {
+                // Apply all filter
+                var item = CommandHelper.FilterItems(new[] { i }, hue, (short)qty, src, range).FirstOrDefault();
+
+                return item == null ? Serial.Zero : item.Serial;
+            }
+            return Serial.Zero;
         }
     }
 }

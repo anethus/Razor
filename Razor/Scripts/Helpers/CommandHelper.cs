@@ -7,7 +7,7 @@ namespace Assistant.Scripts.Helpers
 {
     public static class CommandHelper
     {
-        private static IEnumerable<Item> FilterItems(IEnumerable<Item> items, int hue, short qt, Serial src, int range)
+        public static IEnumerable<Item> FilterItems(IEnumerable<Item> items, int hue, short qt, Serial src, int range)
         {
             foreach (var item in items)
             {
