@@ -73,6 +73,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
             Interpreter.RegisterExpressionHandler("dead", Dead);
+            Interpreter.RegisterExpressionHandler("targetexists", TargetExists);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -622,6 +623,38 @@ namespace Assistant.Scripts
             }
 
             return Serial.Zero;
+        }
+
+        private static readonly Dictionary<string, byte> _targetMap = new Dictionary<string, byte>
+        {
+            {"any", 0 },
+            {"beneficial", 1 },
+            {"harmful",2 }
+        };
+
+        private static bool TargetExists(string expression, Variable[] args, bool quiet)
+        {
+            byte type = 0; 
+
+            if (args.Length > 0)
+            {
+                if (!_targetMap.TryGetValue(args[0].AsString(), out type))
+                {
+                    throw new RunTimeError("Invalid target type");
+                }
+            }
+
+            switch (type)
+            {
+                case 0:
+                    return Targeting.HasBeneficialTarget || Targeting.HasHarmfulTarget;
+                case 1:
+                    return Targeting.HasBeneficialTarget;
+                case 3:
+                    return Targeting.HasHarmfulTarget;
+            }
+
+            return false;
         }
     }
 }

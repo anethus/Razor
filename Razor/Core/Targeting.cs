@@ -92,6 +92,9 @@ namespace Assistant
             get { return m_HasTarget; }
         }
 
+        public static bool HasBeneficialTarget => m_LastBeneTarg != null;
+        public static bool HasHarmfulTarget => m_LastHarmTarg != null;
+
         public static TargetInfo LastTargetInfo
         {
             get { return m_LastTarget; }
