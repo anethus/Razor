@@ -70,6 +70,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("blessed", Blessed);
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
+            Interpreter.RegisterExpressionHandler("targetExist", TargetExist);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -454,6 +455,7 @@ namespace Assistant.Scripts
          */
         private static Dictionary<byte, string> _notorietyMap = new Dictionary<byte, string>
         {
+            { 0, "any" },
             { 1, "innocent" },
             { 2, "friend" },
             { 3, "hostile" },
@@ -569,6 +571,24 @@ namespace Assistant.Scripts
 
                 return item == null ? Serial.Zero : item.Serial;
             }
+            return Serial.Zero;
+        }
+
+        private static uint TargetExist(string expression, Variable[] args, bool quiet)
+        {
+            var mList = World.MobilesInRange();
+
+            if(args.Length > 0)
+            {
+                var noto = args[0].AsString();
+                var notoKey = _notorietyMap.FirstOrDefault(x => x.Value == noto).Key;
+                if (notoKey != 0)
+                    mList = mList.Where(x => x.Notoriety == notoKey).ToList();
+            }
+
+            if (mList.Count > 0)
+                return mList[0].Serial;
+
             return Serial.Zero;
         }
     }
