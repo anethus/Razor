@@ -557,7 +557,10 @@ namespace Assistant.Scripts
                     return Utility.InRange(World.Player.Position, m.Position, range) ? m.Serial : Serial.Zero;
                 }
                 //When all passed args are default just retrun it
-                return m.Serial;
+                if (!m.IsHuman)
+                    return m.Serial;
+
+                return Serial.Zero;
             }
             if(World.Items.TryGetValue(serial, out var i))
             {
