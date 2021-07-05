@@ -574,22 +574,36 @@ namespace Assistant.Scripts
             return Serial.Zero;
         }
 
-        private static uint TargetExist(string expression, Variable[] args, bool quiet)
+        private static Dictionary<string, byte> _targetMap = new Dictionary<string, byte>
         {
-            var mList = World.MobilesInRange();
+            {"any", 0 },
+            {"beneficial", 1 },
+            {"harmful",2 }
+        };
 
+        private static bool TargetExist(string expression, Variable[] args, bool quiet)
+        {
+            byte type = 0; 
             if(args.Length > 0)
             {
-                var noto = args[0].AsString();
-                var notoKey = _notorietyMap.FirstOrDefault(x => x.Value == noto).Key;
-                if (notoKey != 0)
-                    mList = mList.Where(x => x.Notoriety == notoKey).ToList();
+                var tType = args[0].AsString();
+                if (!_targetMap.TryGetValue(tType, out type))
+                {
+                    throw new RunTimeError("Wrong target type.");
+                }
             }
 
-            if (mList.Count > 0)
-                return mList[0].Serial;
+            switch(type)
+            {
+                case 0:
+                    return Targeting.HasBeneficialTarget || Targeting.HasHarmfulTarget;
+                case 1:
+                    return Targeting.HasBeneficialTarget;
+                case 3:
+                    return Targeting.HasHarmfulTarget;
+            }
 
-            return Serial.Zero;
+            return false;
         }
     }
 }
