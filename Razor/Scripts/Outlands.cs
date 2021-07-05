@@ -70,7 +70,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("blessed", Blessed);
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
-            Interpreter.RegisterExpressionHandler("targetExist", TargetExist);
+            Interpreter.RegisterExpressionHandler("targetexist", TargetExist);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -455,7 +455,6 @@ namespace Assistant.Scripts
          */
         private static Dictionary<byte, string> _notorietyMap = new Dictionary<byte, string>
         {
-            { 0, "any" },
             { 1, "innocent" },
             { 2, "friend" },
             { 3, "hostile" },
@@ -534,6 +533,13 @@ namespace Assistant.Scripts
             return layerItem.Serial;
         }
 
+        /// <summary>
+        /// Find specific item by serial
+        /// </summary>
+        /// <param name="expression">Expression</param>
+        /// <param name="args">Should contain Serial</param>
+        /// <param name="quiet">Quiet mode (no sysmsg)</param>
+        /// <returns></returns>
         private static uint Find(string expression, Variable[] args, bool quiet)
         {
             if (args.Length == 0)
@@ -562,6 +568,7 @@ namespace Assistant.Scripts
                 return !m.IsHuman ? m.Serial : Serial.Zero;
             }
 
+            // Check if passed serial is Item
             if (!World.Items.TryGetValue(serial, out var i))
                 return Serial.Zero;
             
@@ -571,6 +578,9 @@ namespace Assistant.Scripts
             return item?.Serial ?? Serial.Zero;
         }
 
+        /// <summary>
+        /// Map Target Type to string
+        /// </summary>
         private static readonly Dictionary<string, byte> TargetMap = new Dictionary<string, byte>
         {
             {"any", 0 },
@@ -578,6 +588,13 @@ namespace Assistant.Scripts
             {"harmful",2 }
         };
 
+        /// <summary>
+        /// Check if specific target type exist - work only for Razor targeting system
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="args"></param>
+        /// <param name="quiet"></param>
+        /// <returns></returns>
         private static bool TargetExist(string expression, Variable[] args, bool quiet)
         {
             byte type = 0; 
