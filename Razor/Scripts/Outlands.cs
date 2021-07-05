@@ -558,23 +558,20 @@ namespace Assistant.Scripts
                 {
                     return Utility.InRange(World.Player.Position, m.Position, range) ? m.Serial : Serial.Zero;
                 }
-                //When all passed args are default just retrun it
-                if (!m.IsHuman)
-                    return m.Serial;
+                //When all passed args are default just return it
+                return !m.IsHuman ? m.Serial : Serial.Zero;
+            }
 
+            if (!World.Items.TryGetValue(serial, out var i))
                 return Serial.Zero;
-            }
-            if(World.Items.TryGetValue(serial, out var i))
-            {
-                // Apply all filter
-                var item = CommandHelper.FilterItems(new[] { i }, hue, (short)qty, src, range).FirstOrDefault();
+            
+            // Apply all filter
+            var item = CommandHelper.FilterItems(new[] { i }, hue, (short)qty, src, range).FirstOrDefault();
 
-                return item == null ? Serial.Zero : item.Serial;
-            }
-            return Serial.Zero;
+            return item?.Serial ?? Serial.Zero;
         }
 
-        private static Dictionary<string, byte> _targetMap = new Dictionary<string, byte>
+        private static readonly Dictionary<string, byte> TargetMap = new Dictionary<string, byte>
         {
             {"any", 0 },
             {"beneficial", 1 },
@@ -587,7 +584,7 @@ namespace Assistant.Scripts
             if(args.Length > 0)
             {
                 var tType = args[0].AsString();
-                if (!_targetMap.TryGetValue(tType, out type))
+                if (!TargetMap.TryGetValue(tType, out type))
                 {
                     throw new RunTimeError("Wrong target type.");
                 }
