@@ -305,7 +305,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static readonly Dictionary<string, LockType> _lockTypeMap = new Dictionary<string, LockType>()
+        private static readonly Dictionary<string, LockType> LockTypeMap = new Dictionary<string, LockType>
         {
             { "up", LockType.Up },
             { "down", LockType.Down },
@@ -318,7 +318,7 @@ namespace Assistant.Scripts
             if (args.Length < 2)
                 throw new RunTimeError("Usage: setskill (skill_name) (up/down/lock)");
 
-            if (!_lockTypeMap.TryGetValue(args[1].AsString(), out var lockType))
+            if (!LockTypeMap.TryGetValue(args[1].AsString(), out var lockType))
                 throw new RunTimeError("Invalid set skill modifier - should be up/down/lock");
 
             int skillId;
@@ -482,7 +482,7 @@ namespace Assistant.Scripts
             return _notorietyMap[m.Notoriety];
         }
 
-        private static readonly Dictionary<string, Layer> _layerMap = new Dictionary<string, Layer>()
+        private static readonly Dictionary<string, Layer> LayerMap = new Dictionary<string, Layer>
         {
             {"righthand", Layer.RightHand},
             {"lefthand", Layer.LeftHand},
@@ -522,7 +522,7 @@ namespace Assistant.Scripts
             if (m == null)
                 throw new RunTimeError("Can't find mobile");
 
-            if (!_layerMap.TryGetValue(args[1].AsString(), out var layerName))
+            if (!LayerMap.TryGetValue(args[1].AsString(), out var layerName))
                 throw new RunTimeError("Invalid layer name");
 
             var layerItem = m.GetItemOnLayer(layerName);
