@@ -36,6 +36,9 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
+                if (Interpreter.CheckIgnored(item.Serial))
+                    continue;
+
                 yield return item;
             }
         }
