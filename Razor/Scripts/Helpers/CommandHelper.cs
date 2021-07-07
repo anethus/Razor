@@ -76,8 +76,8 @@ namespace Assistant.Scripts.Helpers
             var sItem = item;
             for (var i = 0; i < deep; i++)
             {
-                // Check for trapped pouch
-                if (sItem == null || sItem.Hue == 38 && sItem.ItemID.Value == 3705)
+                // Check for trapped pouch and Ignored container
+                if (sItem == null || sItem.Hue == 38 && sItem.ItemID.Value == 3705 || Interpreter.CheckIgnored(sItem.Serial))
                     return false;
 
                 if (sItem.Serial == serial)
@@ -251,6 +251,14 @@ namespace Assistant.Scripts.Helpers
             if (!quiet)
             {
                 World.Player.SendMessage(MsgLevel.Force, message);
+            }
+        }
+
+        public static void SendInfo(string message, bool quiet)
+        {
+            if (!quiet)
+            {
+                World.Player.SendMessage(MsgLevel.Info, message);
             }
         }
 
