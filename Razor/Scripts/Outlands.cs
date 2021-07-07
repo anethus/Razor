@@ -520,17 +520,15 @@ namespace Assistant.Scripts
             var m = World.FindMobile(serial);
 
             if (m == null)
+            {
                 CommandHelper.SendWarning(expression, $"Mobile {serial} not found", quiet);
+                return Serial.Zero;
+            }
 
             if (!_layerMap.TryGetValue(args[1].AsString(), out var layerName))
                 throw new RunTimeError("Invalid layer name");
 
-            var layerItem = m?.GetItemOnLayer(layerName);
-
-            if (layerItem == null)
-                return Serial.Zero;
-
-            return layerItem.Serial;
+            return m.GetItemOnLayer(layerName)?.Serial ?? Serial.Zero;
         }
 
         private static bool AddIgnore(string commands, Variable[] args, bool quiet, bool force)
