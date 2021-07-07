@@ -62,6 +62,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("hue", Hue);
             Interpreter.RegisterExpressionHandler("name", GetName);
             Interpreter.RegisterExpressionHandler("findlayer", FindLayer);
+            Interpreter.RegisterExpressionHandler("dead", Dead);
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
@@ -528,6 +529,25 @@ namespace Assistant.Scripts
                 return Serial.MinusOne;
 
             return layerItem.Serial;
+        }
+
+        private static bool Dead(string expression, Variable[] args, bool quiet)
+        {
+            if (args.Length != 1)
+            {
+                throw new RunTimeError("Usage: dead (serial)");
+            }
+
+            var serial = args[0].AsSerial();
+            var m = World.FindMobile(serial);
+
+            // Should we filter out IsHuman ?
+            if (m != null)
+                return m.Hits == 0;
+            
+            CommandHelper.SendWarning(expression, $"Mobile {serial} not found", quiet);
+            return false;
+
         }
     }
 }
