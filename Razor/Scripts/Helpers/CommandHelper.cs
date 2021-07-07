@@ -51,6 +51,9 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
+                if (Interpreter.CheckIgnored(item.Serial))
+                    continue;
+
                 yield return item;
             }
         }
@@ -87,9 +90,6 @@ namespace Assistant.Scripts.Helpers
         /// Common logic for dclicktype and targettype to find mobiles by name
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="hue">Hue number</param>
-        /// <param name="src">Source name</param>
-        /// <param name="qt">Quantity</param>
         /// <param name="range">Range</param>
         /// <returns></returns>
         public static List<Mobile> GetMobilesByName(string name, int range)
@@ -118,9 +118,6 @@ namespace Assistant.Scripts.Helpers
         /// Common logic for dclicktype and targettype to find mobiles by id
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="hue">Hue number</param>
-        /// <param name="src">Source name</param>
-        /// <param name="qt">Quantity</param>
         /// <param name="range">Range</param>
         /// <returns></returns>
         public static List<Mobile> GetMobilesById(ushort id, int range)
@@ -206,6 +203,14 @@ namespace Assistant.Scripts.Helpers
             if (!quiet)
             {
                 World.Player.SendMessage(MsgLevel.Warning, $"{command} - {message}");
+            }
+        }
+
+        public static void SendMessage(string message, bool quiet)
+        {
+            if (!quiet)
+            {
+                World.Player.SendMessage(MsgLevel.Force, message);
             }
         }
 
