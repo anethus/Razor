@@ -102,6 +102,7 @@ namespace Assistant.Scripts.Engine
     internal class Scope
     {
         private Dictionary<string, Variable> _namespace = new Dictionary<string, Variable>();
+        private readonly HashSet<Serial> _ignoreList = new HashSet<Serial>();
 
         public readonly ASTNode StartNode;
         public readonly Scope Parent;
@@ -131,6 +132,22 @@ namespace Assistant.Scripts.Engine
         {
             _namespace.Remove(name);
         }
+
+        public void AddIgnore(Serial serial)
+        {
+            _ignoreList.Add(serial);
+        }
+
+        public void ClearIgnore()
+        {
+            _ignoreList.Clear();
+        }
+
+        public bool CheckIgnored(Serial serial)
+        {
+            return _ignoreList.Contains(serial);
+        }
+
     }
 
     public class Variable
@@ -1080,7 +1097,7 @@ namespace Assistant.Scripts.Engine
     public static class Interpreter
     {
         // The "global" scope
-        private static Scope _scope = new Scope(null, null);
+        private readonly static Scope _scope = new Scope(null, null);
 
         // The current scope
         private static Scope _currentScope = _scope;
@@ -1191,6 +1208,25 @@ namespace Assistant.Scripts.Engine
             Scope scope = global ? _scope : _currentScope;
 
             scope.SetVariable(name, new Variable(value));
+        }
+
+        public static void AddIgnore(Serial serial, bool global = true)
+        {
+            Scope scope = global ? _scope : _currentScope;
+            scope.AddIgnore(serial);
+        }
+
+        public static void ClearIgnore(bool global = true)
+        {
+            Scope scope = global ? _scope : _currentScope;
+            scope.ClearIgnore();
+        }
+
+
+        public static bool CheckIgnored(Serial serial,bool global = true)
+        {
+            Scope scope = global ? _scope : _currentScope;
+            return scope.CheckIgnored(serial);
         }
 
         public static Variable GetVariable(string name)
