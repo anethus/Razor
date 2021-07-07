@@ -26,7 +26,9 @@ namespace Assistant.Scripts.Helpers
                     switch (item.Container)
                     {
                         case Item i:
-                            if (i.Serial != src)
+                            if (range == -1)
+                                range = 3;
+                            if (!LookRec(i, src, range))
                                 continue;
                             break;
                         case Mobile m:
@@ -56,6 +58,44 @@ namespace Assistant.Scripts.Helpers
 
                 yield return item;
             }
+        }
+
+        /// <summary>
+        /// Looking recuirse in container
+        /// - First Container of item is searching serial = return true
+        /// - If not, take container of item container and look again
+        /// - If item container is Mobile, that mean we are on a top of the chain and we should look for serial
+        /// (set var will set serial of follower not their backpack)
+        /// </summary>
+        /// <param name="item">First level of backpack</param>
+        /// <param name="serial">Serial of container that we are looking for</param>
+        /// <param name="deep">how deep</param>
+        /// <returns></returns>
+        private static bool LookRec(Item item, Serial serial, int deep)
+        {
+            var sItem = item;
+            for (var i = 0; i < deep; i++)
+            {
+                // Check for trapped pouch
+                if (sItem == null || sItem.Hue == 38 && sItem.ItemID.Value == 3705)
+                    return false;
+
+                if (sItem.Serial == serial)
+                    return true;
+                switch (sItem.Container)
+                {
+                    case Item itm:
+                        sItem = itm;
+                        break;
+                    // Mob is end of chain on packet llamas and players
+                    case Mobile mob:
+                        return mob.Serial == serial;
+                    default:
+                        sItem = null;
+                        break;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -175,7 +215,7 @@ namespace Assistant.Scripts.Helpers
         {
             int[] result = { -1, -1, -1 };
 
-            Serial src = args.Length > 2 ? args[1].AsSerial() : World.Player.Backpack.Serial.Value;
+            Serial src = args.Length > 1 ? args[1].AsSerial() : World.Player.Backpack.Serial.Value;
 
             // Hue
             if (args.Length > 2)
