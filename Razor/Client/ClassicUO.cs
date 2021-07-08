@@ -249,6 +249,7 @@ namespace Assistant
         private void Tick()
         {
             Timer.Slice();
+            ScriptManager.Tick();
         }
 
         private void OnPlayerPositionChanged(int x, int y, int z)
