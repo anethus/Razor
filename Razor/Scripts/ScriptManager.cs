@@ -81,82 +81,74 @@ namespace Assistant.Scripts
 
         public static bool PopoutEditor { get; set; }
 
-        private class ScriptTimer : Timer
+        public static void Tick()
         {
-            // Only run scripts once every 25ms to avoid spamming.
-            public ScriptTimer() : base(TimeSpan.FromMilliseconds(25), TimeSpan.FromMilliseconds(25))
+            try
             {
+                if (!Client.Instance.ClientRunning)
+                {
+                    if (ScriptRunning)
+                    {
+                        ScriptRunning = false;
+                        Interpreter.StopScript();
+                    }
+
+                    return;
+                }
+
+                bool running;
+
+                if (_queuedScript != null)
+                {
+                    // Starting a new script. This relies on the atomicity for references in CLR
+                    var script = _queuedScript;
+
+                    running = Interpreter.StartScript(script);
+                    UpdateLineNumber(Interpreter.CurrentLine);
+
+                    _queuedScript = null;
+                }
+                else
+                {
+                    running = Interpreter.ExecuteScript();
+                    UpdateLineNumber(Interpreter.CurrentLine);
+                }
+
+
+                if (running)
+                {
+                    if (Running == false)
+                    {
+                        if (Config.GetBool("ScriptDisablePlayFinish"))
+                            World.Player?.SendMessage(LocString.ScriptPlaying);
+
+                        Assistant.Engine.MainWindow.LockScriptUI(true);
+                        Assistant.Engine.RazorScriptEditorWindow?.LockScriptUI(true);
+                        ScriptRunning = true;
+                    }
+                }
+                else
+                {
+                    if (Running)
+                    {
+                        if (Config.GetBool("ScriptDisablePlayFinish"))
+                            World.Player?.SendMessage(LocString.ScriptFinished);
+
+                        Assistant.Engine.MainWindow.LockScriptUI(false);
+                        Assistant.Engine.RazorScriptEditorWindow?.LockScriptUI(false);
+                        ScriptRunning = false;
+
+                        ClearHighlightLine(HighlightType.Execution);
+                    }
+                }
             }
-
-            protected override void OnTick()
+            catch (Exception ex)
             {
-                try
-                {
-                    if (!Client.Instance.ClientRunning)
-                    {
-                        if (ScriptRunning)
-                        {
-                            ScriptRunning = false;
-                            Interpreter.StopScript();
-                        }
+                World.Player?.SendMessage(MsgLevel.Error, $"Script Error: {ex.Message} (Line: {Interpreter.CurrentLine + 1})");
 
-                        return;
-                    }
+                SetHighlightLine(Interpreter.CurrentLine, HighlightType.Error);
 
-                    bool running;
-
-                    if (_queuedScript != null)
-                    {
-                        // Starting a new script. This relies on the atomicity for references in CLR
-                        var script = _queuedScript;
-
-                        running = Interpreter.StartScript(script);
-                        UpdateLineNumber(Interpreter.CurrentLine);
-
-                        _queuedScript = null;
-                    }
-                    else
-                    {
-                        running = Interpreter.ExecuteScript();
-                        UpdateLineNumber(Interpreter.CurrentLine);
-                    }
-
-
-                    if (running)
-                    {
-                        if (ScriptManager.Running == false)
-                        {
-                            if (Config.GetBool("ScriptDisablePlayFinish"))
-                                World.Player?.SendMessage(LocString.ScriptPlaying);
-
-                            Assistant.Engine.MainWindow.LockScriptUI(true);
-                            Assistant.Engine.RazorScriptEditorWindow?.LockScriptUI(true);
-                            ScriptRunning = true;
-                        }
-                    }
-                    else
-                    {
-                        if (ScriptManager.Running)
-                        {
-                            if (Config.GetBool("ScriptDisablePlayFinish"))
-                                World.Player?.SendMessage(LocString.ScriptFinished);
-
-                            Assistant.Engine.MainWindow.LockScriptUI(false);
-                            Assistant.Engine.RazorScriptEditorWindow?.LockScriptUI(false);
-                            ScriptRunning = false;
-
-                            ClearHighlightLine(HighlightType.Execution);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    World.Player?.SendMessage(MsgLevel.Error, $"Script Error: {ex.Message} (Line: {Interpreter.CurrentLine + 1})");
-
-                    SetHighlightLine(Interpreter.CurrentLine, HighlightType.Error);
-
-                    StopScript();
-                }
+                StopScript();
             }
         }
 
@@ -361,13 +353,6 @@ namespace Assistant.Scripts
             }
         }
 
-        private static ScriptTimer Timer { get; }
-
-        static ScriptManager()
-        {
-            Timer = new ScriptTimer();
-        }
-
         public static void SetEditor(FastColoredTextBox scriptEditor, bool popoutEditor)
         {
             ScriptEditor = scriptEditor;
@@ -408,21 +393,13 @@ namespace Assistant.Scripts
             Expressions.Register();
 
             Outlands.Register();
-
-            Timer.Start();
         }
 
         public static void OnLogout()
         {
             StopScript();
-            Timer.Stop();
             Assistant.Engine.MainWindow.LockScriptUI(false);
             Assistant.Engine.RazorScriptEditorWindow.LockScriptUI(false);
-        }
-
-        public static void StartEngine()
-        {
-            Timer.Start();
         }
 
         private static List<RazorScript> _scriptList { get; set; }
