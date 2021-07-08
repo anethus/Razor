@@ -71,6 +71,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("blessed", Blessed);
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
+            Interpreter.RegisterExpressionHandler("dead", Dead);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -546,6 +547,32 @@ namespace Assistant.Scripts
             Interpreter.ClearIgnore();
             CommandHelper.SendMessage("Ignore List cleared", quiet);
             return true;
+        }
+
+        /// <summary>
+        /// Dead expression
+        /// - if dead [serial] - default - self
+        /// </summary>
+        /// <param name="expression">Expression</param>
+        /// <param name="args">Args</param>
+        /// <param name="quiet">Quiet messaging</param>
+        /// <returns></returns>
+        private static bool Dead(string expression, Variable[] args, bool quiet)
+        {
+            var mob = World.Player as Mobile;
+
+            if (args.Length != 1)
+            {
+                var serial = args[0].AsSerial();
+                mob = World.FindMobile(serial);
+            }
+
+            // No mob = dead
+            if (mob == null)
+                return true;
+
+            // Mob = ghost ? Mob.Dead from packet 0xBF ? DEAD
+            return mob.IsGhost || mob.Dead;
         }
     }
 }

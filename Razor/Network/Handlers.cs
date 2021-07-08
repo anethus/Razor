@@ -350,6 +350,22 @@ namespace Assistant
                     break;
                 }
 
+                case 0x19: // Outlands - Bounded Mob status
+                    /*
+                        m_Stream.Write(0); // bonded pet status
+                        m_Stream.Write((int)serial);
+                        m_Stream.Write((byte)(dead ? 1 : 0);
+
+                     */
+                    var dummyByte = p.ReadByte();
+
+                    Serial mSer = p.ReadUInt32();
+                    var dead = p.ReadByte();
+
+                    var mob = World.FindMobile(mSer);
+                    if(mob != null)
+                        mob.Dead = Convert.ToBoolean(dead);
+                    break;
                 case 0x1C: // cast spell
                 {
                     Serial ser = Serial.MinusOne;
