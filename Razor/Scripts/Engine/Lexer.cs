@@ -323,38 +323,44 @@ namespace Assistant.Scripts.Engine
                 node.Push(ASTNodeType.OPERAND, lexeme, _curLine);
         }
 
-        private static void ParseOperator(ASTNode node, string lexeme)
+        private static ASTNodeType ParseOperator(ASTNode node, string lexeme)
         {
+            ASTNodeType type;
+
             switch (lexeme)
             {
                 case "==":
                 case "=":
-                    node.Push(ASTNodeType.EQUAL, null, _curLine);
+                    type = ASTNodeType.EQUAL;
                     break;
                 case "!=":
-                    node.Push(ASTNodeType.NOT_EQUAL, null, _curLine);
+                    type = ASTNodeType.NOT_EQUAL;
                     break;
                 case "<":
-                    node.Push(ASTNodeType.LESS_THAN, null, _curLine);
+                    type = ASTNodeType.LESS_THAN;
                     break;
                 case "<=":
-                    node.Push(ASTNodeType.LESS_THAN_OR_EQUAL, null, _curLine);
+                    type = ASTNodeType.LESS_THAN_OR_EQUAL;
                     break;
                 case ">":
-                    node.Push(ASTNodeType.GREATER_THAN, null, _curLine);
+                    type = ASTNodeType.GREATER_THAN;
                     break;
                 case ">=":
-                    node.Push(ASTNodeType.GREATER_THAN_OR_EQUAL, null, _curLine);
+                    type = ASTNodeType.GREATER_THAN_OR_EQUAL;
                     break;
                 case "in":
-                    node.Push(ASTNodeType.IN, null, _curLine);
+                    type = ASTNodeType.IN;
                     break;
                 case "as":
-                    node.Push(ASTNodeType.AS, null, _curLine);
+                    type = ASTNodeType.AS;
                     break;
                 default:
                     throw new SyntaxError(node, "Invalid operator in binary expression");
             }
+
+            node.Push(type, null, _curLine);
+
+            return type;
         }
 
         private static void ParseStatement(ASTNode node, string[] lexemes)
@@ -599,9 +605,16 @@ namespace Assistant.Scripts.Engine
                 ParseValue(expr, lexemes[i], ASTNodeType.STRING);
             }
 
-            ParseOperator(expr, lexemes[i++]);
+            var op = ParseOperator(expr, lexemes[i++]);
 
-            ParseOperand(expr, lexemes[i++]);
+            if (op == ASTNodeType.AS)
+            {
+                expr.Push(ASTNodeType.STRING, lexemes[i++], _curLine);
+            }
+            else
+            {
+                ParseOperand(expr, lexemes[i++]);
+            }
 
             for (; i < lexemes.Length; i++)
             {
