@@ -7534,7 +7534,8 @@ namespace Assistant
         {
             try
             {
-                Process.Start(Config.GetString("CapPath"));
+                var psi = new ProcessStartInfo { FileName = Config.GetString("CapPath"), UseShellExecute = true };
+                Process.Start(psi);
             }
             catch (Exception ex)
             {
