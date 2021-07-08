@@ -1058,8 +1058,9 @@ namespace Assistant.Scripts.Engine
                         var arg = Interpreter.GetVariable(node.Lexeme);
                         if (arg != null)
                         {
-                            // TODO: Should really look at the type of arg here
-                            val = arg.AsString();
+                            // We don't want to use arg.AsString() here because it will attempt
+                            // to evaluate aliases and may get us into an infinite loop.
+                            val = node.Lexeme;
                             node = node.Next();
                             break;
                         }
