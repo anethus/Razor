@@ -23,23 +23,8 @@ namespace Assistant.Scripts.Helpers
 
                 if (src != 0)
                 {
-                    switch (item.Container)
-                    {
-                        case Item i:
-                            if (i.Serial != src)
-                                continue;
-                            break;
-                        case Mobile m:
-                            if (m.Serial != src)
-                                continue;
-                            break;
-                        case Serial s:
-                            if (s.Value != src)
-                                continue;
-                            break;
-                        default:
-                            continue;
-                    }
+                    if (!CheckInContainer(item, src))
+                        continue;
                 }
                 else if (item.Container != null)
                 {
@@ -51,8 +36,46 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
+                if (Interpreter.CheckIgnored(item.Serial))
+                    continue;
+
                 yield return item;
             }
+        }
+
+        /// <summary>
+        /// Check if the item is (recursively) inside the given container
+        /// </summary>
+        /// <param name="item">Item to check</param>
+        /// <param name="serial">Serial of container that we are looking for</param>
+        /// <returns></returns>
+        private static bool CheckInContainer(Item item, Serial serial)
+        {
+            if (item == null)
+                return false;
+
+            do
+            {
+                if (item.Serial == serial)
+                {
+                    return true;
+                }
+
+                switch (item.Container)
+                {
+                    case Item i:
+                        item = i;
+                        break;
+                    case Serial s:
+                        item = World.FindItem(s);
+                        break;
+                    default:
+                        item = null;
+                        break;
+                }
+            } while (item != null);
+
+            return false;
         }
 
         /// <summary>
@@ -87,9 +110,6 @@ namespace Assistant.Scripts.Helpers
         /// Common logic for dclicktype and targettype to find mobiles by name
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="hue">Hue number</param>
-        /// <param name="src">Source name</param>
-        /// <param name="qt">Quantity</param>
         /// <param name="range">Range</param>
         /// <returns></returns>
         public static List<Mobile> GetMobilesByName(string name, int range)
@@ -118,9 +138,6 @@ namespace Assistant.Scripts.Helpers
         /// Common logic for dclicktype and targettype to find mobiles by id
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="hue">Hue number</param>
-        /// <param name="src">Source name</param>
-        /// <param name="qt">Quantity</param>
         /// <param name="range">Range</param>
         /// <returns></returns>
         public static List<Mobile> GetMobilesById(ushort id, int range)
@@ -178,7 +195,7 @@ namespace Assistant.Scripts.Helpers
         {
             int[] result = { -1, -1, -1 };
 
-            Serial src = args.Length > 2 ? args[1].AsSerial() : World.Player.Backpack.Serial.Value;
+            Serial src = args.Length > 1 ? args[1].AsSerial() : World.Player.Backpack.Serial.Value;
 
             // Hue
             if (args.Length > 2)
@@ -206,6 +223,22 @@ namespace Assistant.Scripts.Helpers
             if (!quiet)
             {
                 World.Player.SendMessage(MsgLevel.Warning, $"{command} - {message}");
+            }
+        }
+
+        public static void SendMessage(string message, bool quiet)
+        {
+            if (!quiet)
+            {
+                World.Player.SendMessage(MsgLevel.Force, message);
+            }
+        }
+
+        public static void SendInfo(string message, bool quiet)
+        {
+            if (!quiet)
+            {
+                World.Player.SendMessage(MsgLevel.Info, message);
             }
         }
 
