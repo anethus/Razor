@@ -196,13 +196,13 @@ namespace Assistant.Scripts
                     return true;
                 }
 
-                if (ScriptVariables.GetVariable(name) == Serial.MinusOne)
+                if (ScriptVariables.GetVariable(name) == Serial.MinusOne && !quiet)
                 {
                     World.Player.SendMessage(Config.GetInt("SysColor"), $"'{name}' not found, creating new variable");
                 }
 
                 ScriptVariables.RegisterVariable(name, serial);
-                World.Player.SendMessage(MsgLevel.Force, $"'{name}' script variable updated to '{serial}'");
+                CommandHelper.SendMessage($"'{name}' script variable updated to '{serial}'", quiet);
 
                 Assistant.Engine.MainWindow.SaveScriptVariables();
 
@@ -1191,7 +1191,7 @@ namespace Assistant.Scripts
 
             int max = args[0].AsInt();
 
-            World.Player.SendMessage(MsgLevel.Info, $"Random: {Utility.Random(1, max)}");
+            CommandHelper.SendInfo($"Random: {Utility.Random(1, max)}", quiet);
 
             return true;
         }
