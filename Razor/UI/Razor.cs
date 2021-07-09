@@ -127,9 +127,9 @@ namespace Assistant
 
         private bool m_Initializing = false;
 
-        private readonly int MAX_OBJ_DELAY_VALUE = 800;
+        private readonly int MAX_OBJ_DELAY_VALUE = 4000;
 
-        private readonly int MIN_OBJ_DELAY_VALUE = 500;
+        private readonly int MIN_OBJ_DELAY_VALUE = 50;
 
         public void InitConfig()
         {

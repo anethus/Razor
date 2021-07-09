@@ -23,7 +23,7 @@ namespace Assistant.Scripts.Helpers
 
                 if (src != 0)
                 {
-                    if (!CheckInContainer(item, src))
+                    if (!CheckInContainer(item, src, range))
                         continue;
                 }
                 else if (item.Container != null)
@@ -41,6 +41,48 @@ namespace Assistant.Scripts.Helpers
 
                 yield return item;
             }
+        }
+
+        /// <summary>
+        /// Check if the item is (recursively) inside the given container
+        /// </summary>
+        /// <param name="item">Item to check</param>
+        /// <param name="serial">Serial of container that we are looking for</param>
+        /// <param name="maxDepth">Maximum depth to allow for nested containers</param>
+        /// <returns></returns>
+        private static bool CheckInContainer(Item item, Serial serial, int maxDepth)
+        {
+            if (item == null)
+                return false;
+
+            if (maxDepth < 0)
+                maxDepth = 100;
+
+            do
+            {
+                if (item.Serial == serial)
+                {
+                    return true;
+                }
+
+                switch (item.Container)
+                {
+                    case Item i:
+                        item = i;
+                        break;
+                    case Serial s:
+                        item = World.FindItem(s);
+                        break;
+                    case Mobile m:
+                        // Mobile is always at the top
+                        return m.Serial == serial;
+                    default:
+                        item = null;
+                        break;
+                }
+            } while (item != null && maxDepth-- > 0);
+
+            return false;
         }
 
         /// <summary>
