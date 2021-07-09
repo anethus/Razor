@@ -1054,7 +1054,6 @@ namespace Assistant.Scripts
             if (s == Serial.Zero && World.Player != null)
                 s = World.Player.Serial;
 
-            Client.Instance.SendToServer(new ContextMenuRequest(s));
             Client.Instance.SendToServer(new ContextMenuResponse(s, index));
             return true;
         }
