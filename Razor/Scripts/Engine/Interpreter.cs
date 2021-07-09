@@ -1025,19 +1025,19 @@ namespace Assistant.Scripts.Engine
         private bool EvaluateBinaryExpression(ref ASTNode node)
         {
             // Evaluate the left hand side
-            var lhs = EvaluateBinaryOperand(ref node, node.Type);
+            var lhs = EvaluateBinaryOperand(ref node);
 
             // Capture the operator
             var op = node.Type;
             node = node.Next();
 
             // Evaluate the right hand side
-            var rhs = EvaluateBinaryOperand(ref node, op);
+            var rhs = EvaluateBinaryOperand(ref node);
 
             return CompareOperands(op, lhs, rhs);
         }
 
-        private IComparable EvaluateBinaryOperand(ref ASTNode node, ASTNodeType op)
+        private IComparable EvaluateBinaryOperand(ref ASTNode node)
         {
             IComparable val;
 
@@ -1076,7 +1076,7 @@ namespace Assistant.Scripts.Engine
                         if (arg != null)
                         {
 
-                            val = op == ASTNodeType.AS ? node.Lexeme : arg.AsString();
+                            val = node.Lexeme;
                             node = node.Next();
                             break;
                         }
