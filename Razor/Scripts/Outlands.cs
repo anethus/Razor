@@ -559,9 +559,11 @@ namespace Assistant.Scripts
         /// <returns></returns>
         private static bool Dead(string expression, Variable[] args, bool quiet)
         {
+            // Default variable for dead = Self
             var mob = World.Player as Mobile;
 
-            if (args.Length != 1)
+            // If Serial passed, get mobile
+            if (args.Length > 0)
             {
                 var serial = args[0].AsSerial();
                 mob = World.FindMobile(serial);
@@ -571,7 +573,7 @@ namespace Assistant.Scripts
             if (mob == null)
                 return true;
 
-            // Mob = ghost ? Mob.Dead from packet 0xBF ? DEAD
+            // Mob = ghost (body is ghost) or Mob.Dead from packet 0xBF
             return mob.IsGhost || mob.Dead;
         }
     }

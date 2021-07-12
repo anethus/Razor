@@ -349,23 +349,6 @@ namespace Assistant
 
                     break;
                 }
-
-                case 0x19: // Outlands - Bounded Mob status
-                    /*
-                        m_Stream.Write(0); // bonded pet status
-                        m_Stream.Write((int)serial);
-                        m_Stream.Write((byte)(dead ? 1 : 0);
-
-                     */
-                    var dummyByte = p.ReadByte();
-
-                    Serial mSer = p.ReadUInt32();
-                    var dead = p.ReadByte();
-
-                    var mob = World.FindMobile(mSer);
-                    if(mob != null)
-                        mob.Dead = Convert.ToBoolean(dead);
-                    break;
                 case 0x1C: // cast spell
                 {
                     Serial ser = Serial.MinusOne;
@@ -2199,18 +2182,35 @@ namespace Assistant
 
                 case 0x19: //  stat locks
                 {
-                    if (p.ReadByte() == 0x02)
+                    var subCmd = p.ReadByte();
+                    switch (subCmd)
                     {
-                        Mobile m = World.FindMobile(p.ReadUInt32());
-                        if (World.Player == m && m != null)
+                        case 0x02:
                         {
-                            p.ReadByte(); // 0?
+                            Mobile m = World.FindMobile(p.ReadUInt32());
+                            if (World.Player == m && m != null)
+                            {
+                                p.ReadByte(); // 0?
 
-                            byte locks = p.ReadByte();
+                                byte locks = p.ReadByte();
 
-                            World.Player.StrLock = (LockType) ((locks >> 4) & 3);
-                            World.Player.DexLock = (LockType) ((locks >> 2) & 3);
-                            World.Player.IntLock = (LockType) (locks & 3);
+                                World.Player.StrLock = (LockType) ((locks >> 4) & 3);
+                                World.Player.DexLock = (LockType) ((locks >> 2) & 3);
+                                World.Player.IntLock = (LockType) (locks & 3);
+                            }
+
+                            break;
+                        }
+                        case 0x00:
+                        {
+                            Mobile m = World.FindMobile(p.ReadUInt32());
+                            if (m != null)
+                            {
+                                byte deadStatus = p.ReadByte();
+                                m.Dead = deadStatus == 0x1;
+                            }
+
+                            break;
                         }
                     }
 
