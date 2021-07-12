@@ -123,6 +123,11 @@ namespace Assistant.Scripts.Helpers
         {
             List<Mobile> mobiles = new List<Mobile>();
 
+            if (range == -1)
+            {
+                range = 18;
+            }
+
             foreach (var m in World.FindMobilesByName(name))
             {
                 if (m.IsGhost || m.IsHuman)
@@ -130,7 +135,7 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
-                if (range != -1 && !Utility.InRange(World.Player.Position, m.Position, range))
+                if (!Utility.InRange(World.Player.Position, m.Position, range))
                 {
                     continue;
                 }
@@ -164,6 +169,11 @@ namespace Assistant.Scripts.Helpers
                 }
 
                 if (m.Body != id)
+                {
+                    continue;
+                }
+
+                if (!Utility.InRange(World.Player.Position, m.Position, range))
                 {
                     continue;
                 }
