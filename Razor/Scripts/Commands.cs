@@ -222,21 +222,21 @@ namespace Assistant.Scripts
 
                     _setVarState = SetVarState.WAIT_FOR_TARGET;
 
-                    Targeting.OneTimeTarget((ground, serial, pt, gfx) =>
-                    {
-                        ScriptVariables.RegisterVariable(name, serial);
-                        World.Player.SendMessage(MsgLevel.Force, $"'{name}' script variable updated to '{serial}'");
+                    Targeting.OneTimeTarget(
+                        (ground, serial, pt, gfx) =>
+                        {
+                            ScriptVariables.RegisterVariable(name, serial);
+                            World.Player.SendMessage(MsgLevel.Force, $"'{name}' script variable updated to '{serial}'");
 
-                        Assistant.Engine.MainWindow.SaveScriptVariables();
-                        _setVarState = SetVarState.COMPLETE;
-                    });
+                            Assistant.Engine.MainWindow.SaveScriptVariables();
+                            _setVarState = SetVarState.COMPLETE;
+                        },
+                        () =>
+                        {
+                            _setVarState = SetVarState.COMPLETE;
+                        });
                     break;
                 case SetVarState.WAIT_FOR_TARGET:
-                    if (!Targeting.HasTarget)
-                    {
-                        _setVarState = SetVarState.INITIAL_PROMPT;
-                        return true;
-                    }
                     break;
                 case SetVarState.COMPLETE:
                     _setVarState = SetVarState.INITIAL_PROMPT;
@@ -245,7 +245,7 @@ namespace Assistant.Scripts
 
             return false;
         }
-
+        
         private static bool Stop(string command, Variable[] args, bool quiet, bool force)
         {
             ScriptManager.StopScript();
