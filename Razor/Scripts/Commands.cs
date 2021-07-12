@@ -229,14 +229,13 @@ namespace Assistant.Scripts
 
                         Assistant.Engine.MainWindow.SaveScriptVariables();
                         _setVarState = SetVarState.COMPLETE;
+                    },
+                    () =>
+                    {
+                        _setVarState = SetVarState.COMPLETE;
                     });
                     break;
                 case SetVarState.WAIT_FOR_TARGET:
-                    if (!Targeting.HasTarget)
-                    {
-                        _setVarState = SetVarState.INITIAL_PROMPT;
-                        return true;
-                    }
                     break;
                 case SetVarState.COMPLETE:
                     _setVarState = SetVarState.INITIAL_PROMPT;
