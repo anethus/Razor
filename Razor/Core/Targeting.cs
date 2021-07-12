@@ -1220,6 +1220,8 @@ namespace Assistant
                 m_HasTarget = false;
                 m_FromGrabHotKey = false;
 
+                m_OnCancel?.Invoke();
+
                 if (m_Intercept)
                 {
                     args.Block = true;
