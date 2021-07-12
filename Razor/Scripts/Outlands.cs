@@ -71,6 +71,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("blessed", Blessed);
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
+            Interpreter.RegisterExpressionHandler("dead", Dead);
         }
 
         private static bool PopList(string command, Variable[] args, bool quiet, bool force)
@@ -480,6 +481,34 @@ namespace Assistant.Scripts
             }
 
             return _notorietyMap[m.Notoriety];
+        }
+
+        /// <summary>
+        /// Dead expression
+        /// - if dead [serial] - default - self
+        /// </summary>
+        /// <param name="expression">Expression</param>
+        /// <param name="args">Args</param>
+        /// <param name="quiet">Quiet messaging</param>
+        /// <returns></returns>
+        private static bool Dead(string expression, Variable[] args, bool quiet)
+        {
+            // Default variable for dead = Self
+            var mob = World.Player as Mobile;
+
+            // If Serial passed, get mobile
+            if (args.Length > 0)
+            {
+                var serial = args[0].AsSerial();
+                mob = World.FindMobile(serial);
+            }
+
+            // No mob = dead
+            if (mob == null)
+                return true;
+
+            // Mob = ghost (body is ghost) or Mob.Dead from packet 0xBF
+            return mob.IsGhost || mob.Dead;
         }
 
         private static readonly Dictionary<string, Layer> _layerMap = new Dictionary<string, Layer>()
