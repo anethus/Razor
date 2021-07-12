@@ -195,7 +195,7 @@ namespace Assistant.Scripts
                 throw new RunTimeError("Usage: getlabel (serial) (name)");
 
             var serial = args[0].AsSerial();
-            var name = args[1].AsString();
+            var name = args[1].AsString(false);
 
             switch (_getLabelState)
             {
