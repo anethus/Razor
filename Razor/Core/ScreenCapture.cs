@@ -84,8 +84,9 @@ namespace Assistant
                     path = Config.GetUserDirectory("ScreenShots");
                     Config.SetProperty("CapPath", path);
                 }
-                catch
+                catch (Exception e)
                 {
+                    MessageBox.Show(e.Message);
                     path = "";
                 }
             }
@@ -100,15 +101,19 @@ namespace Assistant
 
             try
             {
-                IntPtr hBmp = Platform.CaptureScreen(Client.Instance.GetWindowHandle(), Config.GetBool("CapFullScreen"),
-                    imageTimestampTag);
-                using (Image img = Image.FromHbitmap(hBmp))
-                    img.Save(filename, GetFormat(type));
-                DeleteObject(hBmp);
+                Rectangle bounds = Screen.GetBounds(Point.Empty);
+                using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
+                {
+                    using (Graphics g = Graphics.FromImage(bitmap))
+                    {
+                        g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
+                    }
+                    bitmap.Save(filename, GetFormat(type));
+                }
             }
-            catch
+            catch (Exception e)
             {
-                // ignored
+                MessageBox.Show(e.Message);
             }
 
             LastMobileDeathName = string.Empty;
@@ -118,25 +123,29 @@ namespace Assistant
 
         private static ImageFormat GetFormat(string fmt)
         {
-            //string fmt = Config.GetString( "ImageFormat" ).ToLower();
-            if (fmt == "jpeg" || fmt == "jpg")
-                return ImageFormat.Jpeg;
-            else if (fmt == "png")
-                return ImageFormat.Png;
-            else if (fmt == "bmp")
-                return ImageFormat.Bmp;
-            else if (fmt == "gif")
-                return ImageFormat.Gif;
-            else if (fmt == "tiff" || fmt == "tif")
-                return ImageFormat.Tiff;
-            else if (fmt == "wmf")
-                return ImageFormat.Wmf;
-            else if (fmt == "exif")
-                return ImageFormat.Exif;
-            else if (fmt == "emf")
-                return ImageFormat.Emf;
-            else
-                return ImageFormat.Jpeg;
+            switch (fmt)
+            {
+                case "jpeg":
+                case "jpg":
+                    return ImageFormat.Jpeg;
+                case "png":
+                    return ImageFormat.Png;
+                case "bmp":
+                    return ImageFormat.Bmp;
+                case "gif":
+                    return ImageFormat.Gif;
+                case "tiff":
+                case "tif":
+                    return ImageFormat.Tiff;
+                case "wmf":
+                    return ImageFormat.Wmf;
+                case "exif":
+                    return ImageFormat.Exif;
+                case "emf":
+                    return ImageFormat.Emf;
+                default:
+                    return ImageFormat.Jpeg;
+            }
         }
 
         public static void DisplayTo(ListBox list)

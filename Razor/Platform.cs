@@ -469,14 +469,6 @@ namespace Assistant
                 return 0;
         }
 
-        internal static IntPtr CaptureScreen(IntPtr handle, bool isFullScreen, string msgStr)
-        {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                return Win32Platform.CaptureScreen(handle, isFullScreen, msgStr);
-            else
-                return IntPtr.Zero;
-        }
-
         internal static void BringToFront(IntPtr window)
         {
             try
