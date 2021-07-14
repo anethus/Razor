@@ -109,7 +109,8 @@ namespace Assistant.Scripts
                 else
                 {
                     running = Interpreter.ExecuteScript();
-                    UpdateLineNumber(Interpreter.CurrentLine);
+                    if (running)
+                        UpdateLineNumber(Interpreter.CurrentLine);
                 }
 
 
