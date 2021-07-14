@@ -6331,10 +6331,9 @@ namespace Assistant
         {
             RazorScript selectedScript = GetScriptSel();
 
-            if (selectedScript == null)
+            if (selectedScript == null || ScriptManager.SelectedScript == null)
             {
                 string filePath = $"{Path.Combine(ScriptManager.ScriptPath, $"auto-{Guid.NewGuid().ToString().Substring(0, 4)}.razor")}";
-
                 File.WriteAllText(filePath, scriptEditor.Text);
 
                 RazorScript script = new RazorScript
