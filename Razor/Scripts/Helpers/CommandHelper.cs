@@ -60,6 +60,9 @@ namespace Assistant.Scripts.Helpers
 
             do
             {
+                if (item.IsCorpse)
+                    return false;
+
                 if (item.Serial == serial)
                 {
                     return true;
