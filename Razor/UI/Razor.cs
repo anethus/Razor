@@ -6331,7 +6331,12 @@ namespace Assistant
         {
             RazorScript selectedScript = GetScriptSel();
 
-            if (selectedScript == null || ScriptManager.SelectedScript == null)
+            // If not found on Tree try to get it from Script Manager
+            if (selectedScript == null)
+                selectedScript = ScriptManager.SelectedScript;
+
+            // Still nothing? create new
+            if (selectedScript == null)
             {
                 string filePath = $"{Path.Combine(ScriptManager.ScriptPath, $"auto-{Guid.NewGuid().ToString().Substring(0, 4)}.razor")}";
                 File.WriteAllText(filePath, scriptEditor.Text);
