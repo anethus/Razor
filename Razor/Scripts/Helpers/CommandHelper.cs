@@ -21,7 +21,20 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
-                if (src != 0)
+                if (src == Serial.SelfAndBackpack)
+                {
+                    if (!CheckInContainer(item, World.Player.Serial, range) &&
+                        !CheckInContainer(item, World.Player.Backpack.Serial, range))
+                        continue;
+                }
+                else if (src == Serial.SelfBackpackAndGround)
+                {
+                    if (!CheckInContainer(item, World.Player.Serial, range) &&
+                        !CheckInContainer(item, World.Player.Backpack.Serial, range) &&
+                        !(item.Container == null && Utility.InRange(World.Player.Position, item.Position, 2)))
+                        continue;
+                }
+                else if (src != 0)
                 {
                     if (!CheckInContainer(item, src, range))
                         continue;
@@ -215,7 +228,19 @@ namespace Assistant.Scripts.Helpers
         {
             int[] result = { -1, -1, -1 };
 
-            Serial src = args.Length > 1 ? args[1].AsSerial() : World.Player.Backpack.Serial.Value;
+            Serial src = Serial.SelfAndBackpack;
+
+            if (args.Length > 1)
+            {
+                if (args[1].AsString(false) == "true")
+                {
+                    src = Serial.SelfBackpackAndGround;
+                }
+                else
+                {
+                    src = args[1].AsSerial();
+                }
+            }
 
             // Hue
             if (args.Length > 2)

@@ -31,6 +31,9 @@ namespace Assistant
         public static readonly Serial MinusOne = new Serial(0xFFFFFFFF);
         public static readonly Serial Zero = new Serial(0);
 
+        public static readonly Serial SelfAndBackpack = new Serial(0xFFFFFFFE);
+        public static readonly Serial SelfBackpackAndGround = new Serial(0xFFFFFFFD);
+
         private Serial(uint serial)
         {
             m_Serial = serial;
