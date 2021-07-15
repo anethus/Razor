@@ -65,6 +65,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("hue", Hue);
             Interpreter.RegisterExpressionHandler("name", GetName);
             Interpreter.RegisterExpressionHandler("findlayer", FindLayer);
+            Interpreter.RegisterExpressionHandler("find", Find);
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
@@ -306,7 +307,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static readonly Dictionary<string, LockType> _lockTypeMap = new Dictionary<string, LockType>()
+        private static readonly Dictionary<string, LockType> _lockTypeMap = new Dictionary<string, LockType>
         {
             { "up", LockType.Up },
             { "down", LockType.Down },
@@ -575,6 +576,52 @@ namespace Assistant.Scripts
             Interpreter.ClearIgnore();
             CommandHelper.SendMessage("Ignore List cleared", quiet);
             return true;
+        }
+
+        private static uint Find(string expression, Variable[] args, bool quiet)
+        {
+            if (args.Length == 0)
+            {
+                throw new RunTimeError("Usage: find ('serial') [src] [hue] [qty] [range]");
+            }
+
+            var serial = args[0].AsSerial();
+
+            (Serial src, int hue, int qty, int range) = CommandHelper.ParseFindArguments(args);
+
+            if (range == -1)
+                range = 18;
+
+            // Check if is a mobile
+            if (World.Mobiles.TryGetValue(serial, out var m))
+            {
+                if (m.IsHuman)
+                    return Serial.Zero;
+
+                if (hue != -1 && m.Hue != hue)
+                {
+                    return Serial.Zero;
+                }
+
+                if (!Utility.InRange(World.Player.Position, m.Position, range))
+                {
+                    return Serial.Zero;
+                }
+
+                return m.Serial;
+            }
+
+            // Check if passed serial is Item
+            if (!World.Items.TryGetValue(serial, out var i))
+                return Serial.Zero;
+
+            // Apply all filter
+            foreach (var item in CommandHelper.FilterItems(new[] { i }, hue, (short)qty, src, range))
+            {
+                return item.Serial;
+            }
+
+            return Serial.Zero;
         }
     }
 }
