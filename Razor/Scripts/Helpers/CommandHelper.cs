@@ -215,7 +215,20 @@ namespace Assistant.Scripts.Helpers
         {
             int[] result = { -1, -1, -1 };
 
-            Serial src = args.Length > 1 ? args[1].AsSerial() : World.Player.Backpack.Serial.Value;
+            Serial src = Serial.Zero;
+
+            if (args.Length > 1)
+            {
+                if (args[1].AsString(false) == "true")
+                {
+                    // Treat this as 'ground' with range 2
+                    result[2] = 2;
+                }
+                else
+                {
+                    src = args[1].AsSerial();
+                }
+            }
 
             // Hue
             if (args.Length > 2)
