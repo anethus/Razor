@@ -2183,18 +2183,36 @@ namespace Assistant
 
                 case 0x19: //  stat locks
                 {
-                    if (p.ReadByte() == 0x02)
+                    var subCmd = p.ReadByte();
+
+                    switch (subCmd)
                     {
-                        Mobile m = World.FindMobile(p.ReadUInt32());
-                        if (World.Player == m && m != null)
+                        case 0x02:
                         {
-                            p.ReadByte(); // 0?
+                            Mobile m = World.FindMobile(p.ReadUInt32());
+                            if (World.Player == m && m != null)
+                            {
+                                p.ReadByte(); // 0?
 
-                            byte locks = p.ReadByte();
+                                byte locks = p.ReadByte();
 
-                            World.Player.StrLock = (LockType) ((locks >> 4) & 3);
-                            World.Player.DexLock = (LockType) ((locks >> 2) & 3);
-                            World.Player.IntLock = (LockType) (locks & 3);
+                                World.Player.StrLock = (LockType) ((locks >> 4) & 3);
+                                World.Player.DexLock = (LockType) ((locks >> 2) & 3);
+                                World.Player.IntLock = (LockType) (locks & 3);
+                            }
+
+                            break;
+                        }
+                        case 0x00:
+                        {
+                            Mobile m = World.FindMobile(p.ReadUInt32());
+                            if (m != null)
+                            {
+                                byte deadStatus = p.ReadByte();
+                                m.Dead = deadStatus == 0x1;
+                            }
+
+                            break;
                         }
                     }
 

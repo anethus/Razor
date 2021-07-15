@@ -82,6 +82,14 @@ namespace Assistant
 
         private byte m_Map;
 
+        private bool m_Dead;
+
+        public bool Dead
+        {
+            get => m_Dead;
+            set => m_Dead = value;
+        }
+
         //private static BodyType[] m_Types;
 
         //public static void Initialize()
