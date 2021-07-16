@@ -627,14 +627,15 @@ namespace Assistant.Scripts
 
         private static readonly Dictionary<string, byte> _targetMap = new Dictionary<string, byte>
         {
-            {"any", 0 },
-            {"beneficial", 1 },
-            {"harmful",2 }
+            {"neutral", 0 },
+            {"harmful", 1 },
+            {"beneficial",2 },
+            {"any", 3 }
         };
 
         private static bool TargetExists(string expression, Variable[] args, bool quiet)
         {
-            byte type = 0; 
+            byte type = 3;
 
             if (args.Length > 0)
             {
@@ -644,17 +645,13 @@ namespace Assistant.Scripts
                 }
             }
 
-            switch (type)
-            {
-                case 0:
-                    return Targeting.HasBeneficialTarget || Targeting.HasHarmfulTarget;
-                case 1:
-                    return Targeting.HasBeneficialTarget;
-                case 3:
-                    return Targeting.HasHarmfulTarget;
-            }
+            if (!Targeting.HasTarget)
+                return false;
 
-            return false;
+            if (type == 3)
+                return true;
+
+            return Targeting.CursorType == type;
         }
     }
 }
