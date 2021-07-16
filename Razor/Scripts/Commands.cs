@@ -1004,22 +1004,23 @@ namespace Assistant.Scripts
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError("Usage: gumpresponse (buttondId)");
-                //throw new RunTimeError("Usage: gumpresponse (buttondId) [option] ['text1'|fieldId] ['text2'|fieldId]");
+                throw new RunTimeError("Usage: gumpresponse (buttondId) [gumpId]");
             }
 
             int buttonId = args[0].AsInt();
 
-            /*private int m_ButtonID;
-                    private int[] m_Switches;
-                    private GumpTextEntry[] m_TextEntries;*/
+            var gumpId = World.Player.CurrentGumpI;
 
-            //Assistant.Macros.GumpResponseAction|9|0|0
-            //Assistant.Macros.GumpResponseAction|1|0|1|0&Hello How are you?
-            //Assistant.Macros.GumpResponseAction|501|0|2|1&box2|0&box1
+            if (args.Length > 1)
+                gumpId = args[1].AsUInt();
 
-            Client.Instance.SendToClient(new CloseGump(World.Player.CurrentGumpI));
-            Client.Instance.SendToServer(new GumpResponse(World.Player.CurrentGumpS, World.Player.CurrentGumpI,
+            if (!World.Player.GumpList.ContainsKey(gumpId))
+                return true;
+
+            var gumpS = World.Player.GumpList[gumpId].GumpSerial;
+
+            Client.Instance.SendToClient(new CloseGump(gumpId));
+            Client.Instance.SendToServer(new GumpResponse(gumpS, gumpId,
                 buttonId, new int[] { }, new GumpTextEntry[] { }));
 
             World.Player.HasGump = false;
@@ -1030,8 +1031,21 @@ namespace Assistant.Scripts
 
         private static bool GumpClose(string command, Variable[] args, bool quiet, bool force)
         {
-            Client.Instance.SendToClient(new CloseGump(World.Player.CurrentGumpI));
-            Client.Instance.SendToServer(new GumpResponse(World.Player.CurrentGumpS, World.Player.CurrentGumpI, 0,
+            var gumpI = World.Player.CurrentGumpI;
+            var gumpS = World.Player.CurrentGumpS;
+
+            if (args.Length > 0)
+            {
+                gumpI = args[0].AsUInt();
+            }
+
+            if (!World.Player.GumpList.ContainsKey(gumpI))
+                return true;
+            gumpS = World.Player.GumpList[gumpI].GumpSerial;
+
+
+            Client.Instance.SendToClient(new CloseGump(gumpI));
+            Client.Instance.SendToServer(new GumpResponse(gumpS, gumpI, 0,
                 new int[] { }, new GumpTextEntry[] { }));
 
             World.Player.HasGump = false;

@@ -973,6 +973,46 @@ namespace Assistant
         public uint PromptType;
         public string PromptInputText;
 
+        public Dictionary<uint, GumpInfo> GumpList = new Dictionary<uint, GumpInfo>();
+
+        public class GumpInfo
+        {
+            private uint _serial;
+            private uint _gumpId;
+            List<string> _gumpContext;
+
+            public uint GumpSerial
+            {
+                set => _serial = value;
+                get => _serial;
+            }
+
+            public uint GumpId
+            {
+                set => _gumpId = value;
+                get => _gumpId;
+            }
+
+            public List<string> GumpContext
+            {
+                set => _gumpContext = value;
+                get => _gumpContext;
+            }
+
+            public GumpInfo(uint serial, uint gumpId, List<string> gumpContext)
+            {
+                _serial = serial;
+                _gumpId = gumpId;
+                _gumpContext = gumpContext;
+            }
+
+            public GumpInfo(uint serial, uint gumpId)
+            {
+                _serial = serial;
+                _gumpId = gumpId;
+            }
+        }
+
         public GumpCollection InternalGumps { get; set; } = new GumpCollection();
 
         public void CancelPrompt()
