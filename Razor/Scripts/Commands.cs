@@ -1032,7 +1032,6 @@ namespace Assistant.Scripts
         private static bool GumpClose(string command, Variable[] args, bool quiet, bool force)
         {
             var gumpI = World.Player.CurrentGumpI;
-            var gumpS = World.Player.CurrentGumpS;
 
             if (args.Length > 0)
             {
@@ -1041,7 +1040,7 @@ namespace Assistant.Scripts
 
             if (!World.Player.GumpList.ContainsKey(gumpI))
                 return true;
-            gumpS = World.Player.GumpList[gumpI].GumpSerial;
+            var gumpS = World.Player.GumpList[gumpI].GumpSerial;
 
 
             Client.Instance.SendToClient(new CloseGump(gumpI));
