@@ -300,7 +300,7 @@ namespace Assistant.Scripts
             Interpreter.Timeout(args.Length == 2 ? args[1].AsUInt() : 30000, () => { return true; });
 
             if ((World.Player.HasGump || World.Player.HasCompressedGump) &&
-                (World.Player.CurrentGumpI == gumpId || !strict || gumpId == 0))
+                (World.Player.GumpList.ContainsKey(gumpId) || !strict || gumpId == 0))
             {
                 Interpreter.ClearTimeout();
                 return true;
@@ -1024,7 +1024,6 @@ namespace Assistant.Scripts
                 buttonId, new int[] { }, new GumpTextEntry[] { }));
 
             World.Player.HasGump = false;
-            World.Player.HasCompressedGump = false;
 
             return true;
         }
@@ -1048,7 +1047,6 @@ namespace Assistant.Scripts
                 new int[] { }, new GumpTextEntry[] { }));
 
             World.Player.HasGump = false;
-            World.Player.HasCompressedGump = false;
 
             return true;
         }
