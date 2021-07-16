@@ -657,7 +657,7 @@ namespace Assistant.Scripts
                     return Targeting.HasTarget;
             }
 
-            return true;
+            return false;
         }
     }
 }
