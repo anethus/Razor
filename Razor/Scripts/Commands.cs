@@ -674,18 +674,21 @@ namespace Assistant.Scripts
         {
             if (args.Length < 1)
             {
-                throw new RunTimeError("Usage: lifttype ('name') OR ('graphic') [amount] [src] [hue]");
+                throw new RunTimeError("Usage: lifttype ('name') OR ('graphic') [qty] [src] [hue] [range]");
             }
 
             string gfxStr = args[0].AsString();
             ushort gfx = Utility.ToUInt16(gfxStr, 0);
-            ushort amount = 1;
+
+
+            ushort qty = 1;
             Serial src = World.Player.Backpack.Serial;
             int hue = -1;
+            int range = -1;
 
             if (args.Length > 1)
             {
-                amount = Utility.ToUInt16(args[1].AsString(), 1);
+                qty = (ushort)Math.Max(CommandHelper.IsNumberOrAny(args[1].AsString()), 1);
             }
 
             if (args.Length > 2)
@@ -701,6 +704,16 @@ namespace Assistant.Scripts
             if (args.Length > 3)
             {
                 hue = CommandHelper.IsNumberOrAny(args[3].AsString());
+            }
+
+            if (args.Length > 4)
+            {
+                range = CommandHelper.IsNumberOrAny(args[1].AsString());
+            }
+
+            if (range <= 0)
+            {
+                range = 18;
             }
 
             if (_lastLiftTypeId > 0)
@@ -725,7 +738,7 @@ namespace Assistant.Scripts
                 // No graphic id, maybe searching by name?
                 if (gfx == 0)
                 {
-                    item = CommandHelper.GetItemsByName(gfxStr, hue, src, (short)amount, 3).FirstOrDefault();
+                    item = CommandHelper.GetItemsByName(gfxStr, hue, src, (short)qty, range).FirstOrDefault();
 
                     if (item == null)
                     {
@@ -735,15 +748,15 @@ namespace Assistant.Scripts
                 }
                 else
                 {
-                    item = CommandHelper.GetItemsById(gfx, hue, src, (short)amount, 3).FirstOrDefault();
+                    item = CommandHelper.GetItemsById(gfx, hue, src, (short)qty, range).FirstOrDefault();
                 }
 
                 if (item != null)
                 {
-                    if (item.Amount < amount)
-                        amount = item.Amount;
+                    if (item.Amount < qty)
+                        qty = item.Amount;
 
-                    _lastLiftTypeId = DragDropManager.Drag(item, amount);
+                    _lastLiftTypeId = DragDropManager.Drag(item, qty);
                 }
                 else
                 {
