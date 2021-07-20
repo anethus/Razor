@@ -192,13 +192,13 @@ namespace Assistant.Scripts
 
                 if (force)
                 {
-                    Interpreter.SetVariable(name, serial.ToString(), !quiet);
+                    Interpreter.SetVariable(name, serial.ToString(), true);
                     return true;
                 }
 
                 if (ScriptVariables.GetVariable(name) == Serial.MinusOne && !quiet)
                 {
-                    World.Player.SendMessage(Config.GetInt("SysColor"), $"'{name}' not found, creating new variable");
+                    CommandHelper.SendMessage($"'{name}' not found, creating new variable", quiet);
                 }
 
                 ScriptVariables.RegisterVariable(name, serial);
@@ -216,7 +216,7 @@ namespace Assistant.Scripts
                 case SetVarState.INITIAL_PROMPT:
                     if (ScriptVariables.GetVariable(name) == Serial.MinusOne)
                     {
-                        World.Player.SendMessage(Config.GetInt("SysColor"), $"'{name}' not found, creating new variable");
+                        CommandHelper.SendMessage($"'{name}' not found, creating new variable", quiet);
                     }
                     World.Player.SendMessage(MsgLevel.Force, $"Select target for variable '{name}'");
 
@@ -225,7 +225,7 @@ namespace Assistant.Scripts
                     Targeting.OneTimeTarget((ground, serial, pt, gfx) =>
                     {
                         ScriptVariables.RegisterVariable(name, serial);
-                        World.Player.SendMessage(MsgLevel.Force, $"'{name}' script variable updated to '{serial}'");
+                        CommandHelper.SendMessage($"'{name}' script variable updated to '{serial}'", quiet);
 
                         Assistant.Engine.MainWindow.SaveScriptVariables();
                         _setVarState = SetVarState.COMPLETE;
