@@ -217,7 +217,14 @@ namespace Assistant.Scripts.Engine
             if (serial != uint.MaxValue)
                 return serial;
 
-            return AsUInt();
+            try
+            {
+                return AsUInt();
+            }
+            catch (RunTimeError)
+            { }
+
+            return Serial.MinusOne;
         }
 
         // Treat the argument as a string
