@@ -118,7 +118,7 @@ namespace Assistant.Scripts
                     front = true;
             }
 
-            Interpreter.PushList(args[0].AsString(), args[1], front, force);
+            Interpreter.PushList(args[0].AsString(), new Variable(args[1].AsString()), front, force);
 
             return true;
         }
