@@ -43,16 +43,6 @@ namespace Assistant
         ValueMask = 0x87
     }
 
-    //public enum BodyType : byte
-    //{
-    //    Empty,
-    //    Monster,
-    //    Sea_Monster,
-    //    Animal,
-    //    Human,
-    //    Equipment
-    //}
-
     public class Mobile : UOEntity
     {
         private ushort m_Body;
@@ -72,7 +62,6 @@ namespace Assistant
         private bool m_Poisoned;
 
         private bool m_CanRename;
-        //end new
 
         private ushort m_HitsMax, m_Hits;
         protected ushort m_StamMax, m_Stam, m_ManaMax, m_Mana;
@@ -88,20 +77,6 @@ namespace Assistant
         {
             get => m_Dead;
             set => m_Dead = value;
-        }
-
-        public override void AfterLoad()
-        {
-            int count = m_LoadSerials.Count;
-
-            for (int i = count - 1; i >= 0; --i)
-            {
-                Item it = World.FindItem(m_LoadSerials[i]);
-                if (it != null)
-                    m_Items.Add(it);
-            }
-
-            m_LoadSerials = null; //per il GC e per liberare RAM
         }
 
         public Mobile(Serial serial) : base(serial)
@@ -239,12 +214,11 @@ namespace Assistant
             set { m_Paralyzed = value; }
         }
 
-        public bool CanRename //A pet! (where the health bar is open, we can add this to an arraylist of mobiles...
+        public bool CanRename
         {
             get { return m_CanRename; }
             set { m_CanRename = value; }
         }
-        //end new
 
         public bool Warmode
         {
@@ -571,92 +545,6 @@ namespace Assistant
         internal void OverheadMessage(LocString str, params object[] args)
         {
             OverheadMessage(Language.Format(str, args));
-        }
-
-        private Point2D m_ButtonPoint = Point2D.Zero;
-
-        internal Point2D ButtonPoint
-        {
-            get { return m_ButtonPoint; }
-            set { m_ButtonPoint = value; }
-        }
-
-        private static List<Layer> _layers = new List<Layer>
-        {
-            Layer.Backpack,
-            Layer.Invalid,
-            Layer.FirstValid,
-            Layer.RightHand,
-            Layer.LeftHand,
-            Layer.Shoes,
-            Layer.Pants,
-            Layer.Shirt,
-            Layer.Head,
-            Layer.Neck,
-            Layer.Gloves,
-            Layer.InnerTorso,
-            Layer.MiddleTorso,
-            Layer.Arms,
-            Layer.Cloak,
-            Layer.OuterTorso,
-            Layer.OuterLegs,
-            Layer.InnerLegs,
-            Layer.LastUserValid,
-            Layer.Mount,
-            Layer.LastValid,
-            Layer.Hair
-        };
-
-        internal void ResetLayerHue()
-        {
-            if (IsGhost)
-                return;
-
-            foreach (Layer l in _layers)
-            {
-                Item i = GetItemOnLayer(l);
-
-                if (i == null)
-                    continue;
-
-                if (i.ItemID == 0x204E && i.Hue == 0x08FD) // death shroud
-                    i.ItemID = 0x1F03;
-
-                Client.Instance.SendToClient(new EquipmentItem(i, i.Hue, Serial));
-            }
-        }
-
-        internal void SetLayerHue(int hue)
-        {
-            if (IsGhost)
-                return;
-
-            foreach (Layer l in _layers)
-            {
-                Item i = GetItemOnLayer(l);
-                if (i == null)
-                    continue;
-
-                Client.Instance.SendToClient(new EquipmentItem(i, (ushort) hue, Serial));
-            }
-        }
-
-        internal Packet SetMobileHue(Packet p, int hue)
-        {
-            if (IsGhost)
-                return p;
-
-            p = WriteHueToPacket(p, (ushort) hue);
-
-            return p;
-        }
-
-        private static Packet WriteHueToPacket(Packet p, ushort color)
-        {
-            p.Seek(-3, SeekOrigin.Current);
-            p.Write((short) color);
-            p.Seek(+1, SeekOrigin.Current);
-            return p;
         }
     }
 }
