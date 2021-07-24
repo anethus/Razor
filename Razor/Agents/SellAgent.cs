@@ -53,16 +53,6 @@ namespace Assistant.Agents
 
             HotKey.Add(HKCategory.Agents, HKSubCat.None, Language.GetString(LocString.SetSellAgentHotBag),
                 new HotKeyCallback(SetHotBag));
-
-            Agent.OnItemCreated += new ItemCreatedEventHandler(CheckHBOPL);
-        }
-
-        private void CheckHBOPL(Item item)
-        {
-            if (item.Serial == m_HotBag)
-            {
-                item.ObjPropList.Add(Language.GetString(LocString.SellHB));
-            }
         }
 
         private void OnSingleClick(PacketReader pvSrc, PacketHandlerEventArgs args)
@@ -234,15 +224,6 @@ namespace Assistant.Agents
                     }
                     else
                     {
-                        Item hb = World.FindItem(m_HotBag);
-                        if (hb != null)
-                        {
-                            if (hb.ObjPropList.Remove(Language.GetString(LocString.SellHB)))
-                            {
-                                hb.OPLChanged();
-                            }
-                        }
-
                         m_HotBag = Serial.Zero;
                         SetHBText();
                     }
@@ -304,13 +285,6 @@ namespace Assistant.Agents
             {
                 m_HotBag = serial;
                 SetHBText();
-
-                Item hb = World.FindItem(m_HotBag);
-                if (hb != null)
-                {
-                    hb.ObjPropList.Add(Language.GetString(LocString.SellHB));
-                    hb.OPLChanged();
-                }
             }
         }
 

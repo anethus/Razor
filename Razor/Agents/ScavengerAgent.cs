@@ -63,8 +63,6 @@ namespace Assistant.Agents
             HotKey.Add(HKCategory.Agents, LocString.ScavengerAddTarget, new HotKeyCallback(OnAddToHotBag));
 
             PacketHandler.RegisterClientToServerViewer(0x09, new PacketViewerCallback(OnSingleClick));
-
-            Agent.OnItemCreated += new ItemCreatedEventHandler(CheckBagOPL);
         }
 
         public void ToggleEnabled()
@@ -111,14 +109,6 @@ namespace Assistant.Agents
         {
             World.Player.SendMessage(LocString.TargCont);
             Targeting.OneTimeTarget(new Targeting.TargetResponseCallback(OnTargetBag));
-        }
-
-        private void CheckBagOPL(Item item)
-        {
-            if (item.Serial == m_Bag)
-            {
-                item.ObjPropList.Add(Language.GetString(LocString.ScavengerHB));
-            }
         }
 
         private void OnSingleClick(PacketReader pvSrc, PacketHandlerEventArgs args)
@@ -288,20 +278,8 @@ namespace Assistant.Agents
                 m_BagRef = World.FindItem(m_Bag);
             }
 
-            if (m_BagRef != null)
-            {
-                m_BagRef.ObjPropList.Remove(Language.GetString(LocString.ScavengerHB));
-                m_BagRef.OPLChanged();
-            }
-
             DebugLog("Set bag to {0}", serial);
             m_Bag = serial;
-            m_BagRef = World.FindItem(m_Bag);
-            if (m_BagRef != null)
-            {
-                m_BagRef.ObjPropList.Add(Language.GetString(LocString.ScavengerHB));
-                m_BagRef.OPLChanged();
-            }
 
             World.Player.SendMessage(MsgLevel.Force, LocString.ContSet, m_Bag);
         }

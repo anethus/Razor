@@ -65,16 +65,6 @@ namespace Assistant.Agents
                 $"{Language.GetString(LocString.SetOrganizerHB)}-{Number:D2}",
                 new HotKeyCallback(SetHotBag));
             PacketHandler.RegisterClientToServerViewer(0x09, new PacketViewerCallback(OnSingleClick));
-
-            Agent.OnItemCreated += new ItemCreatedEventHandler(CheckContOPL);
-        }
-
-        public void CheckContOPL(Item item)
-        {
-            if (item.Serial == m_Cont)
-            {
-                item.ObjPropList.Add(Language.Format(LocString.OrganizerHBA1, Number));
-            }
         }
 
         private void OnSingleClick(PacketReader pvSrc, PacketHandlerEventArgs args)
@@ -170,13 +160,6 @@ namespace Assistant.Agents
                     if (MessageBox.Show(Language.GetString(LocString.Confirm), Language.GetString(LocString.ClearList),
                             MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        Item bag = World.FindItem(m_Cont);
-                        if (bag != null)
-                        {
-                            bag.ObjPropList.Remove(Language.Format(LocString.OrganizerHBA1, Number));
-                            bag.OPLChanged();
-                        }
-
                         m_SubList.Items.Clear();
                         m_Items.Clear();
                         m_Cont = 0;
@@ -305,13 +288,6 @@ namespace Assistant.Agents
 
             if (!location && serial > 0 && serial <= 0x7FFFFF00)
             {
-                Item bag = World.FindItem(m_Cont);
-                if (bag != null && bag.ObjPropList != null)
-                {
-                    bag.ObjPropList.Remove(Language.Format(LocString.OrganizerHBA1, Number));
-                    bag.OPLChanged();
-                }
-
                 m_Cont = serial;
                 if (m_BagBTN != null)
                 {
@@ -321,13 +297,6 @@ namespace Assistant.Agents
                 if (World.Player != null)
                 {
                     World.Player.SendMessage(MsgLevel.Force, LocString.ContSet);
-                }
-
-                bag = World.FindItem(m_Cont);
-                if (bag != null && bag.ObjPropList != null)
-                {
-                    bag.ObjPropList.Add(Language.Format(LocString.OrganizerHBA1, Number));
-                    bag.OPLChanged();
                 }
             }
         }

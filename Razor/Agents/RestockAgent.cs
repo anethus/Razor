@@ -65,16 +65,6 @@ namespace Assistant.Agents
                 $"{Language.GetString(LocString.SetRestockHB)}-{Number:D2}",
                 new HotKeyCallback(SetHB));
             PacketHandler.RegisterClientToServerViewer(0x09, new PacketViewerCallback(OnSingleClick));
-
-            Agent.OnItemCreated += new ItemCreatedEventHandler(CheckHBOPL);
-        }
-
-        public void CheckHBOPL(Item item)
-        {
-            if (item.Serial == m_HotBag)
-            {
-                item.ObjPropList.Add(Language.Format(LocString.RestockHBA1, Number));
-            }
         }
 
         private void OnSingleClick(PacketReader pvSrc, PacketHandlerEventArgs args)
@@ -247,15 +237,6 @@ namespace Assistant.Agents
         {
             Engine.MainWindow.SafeAction(s => s.ShowMe());
 
-            Item hb = World.FindItem(m_HotBag);
-            if (hb != null)
-            {
-                if (hb.ObjPropList.Remove(Language.Format(LocString.RestockHBA1, Number)))
-                {
-                    hb.OPLChanged();
-                }
-            }
-
             if (!location && serial.IsItem)
             {
                 m_HotBag = serial;
@@ -263,13 +244,6 @@ namespace Assistant.Agents
             else
             {
                 m_HotBag = Serial.Zero;
-            }
-
-            hb = World.FindItem(m_HotBag);
-            if (hb != null)
-            {
-                hb.ObjPropList.Add(Language.Format(LocString.RestockHBA1, Number));
-                hb.OPLChanged();
             }
 
             SetHBText();

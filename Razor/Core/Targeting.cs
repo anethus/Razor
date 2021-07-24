@@ -463,80 +463,23 @@ namespace Assistant
         private static Serial m_OldBeneficialLT = Serial.Zero;
         private static Serial m_OldHarmfulLT = Serial.Zero;
 
-        private static void RemoveTextFlags(UOEntity m)
-        {
-            if (m != null)
-            {
-                bool oplchanged = false;
-
-                oplchanged |= m.ObjPropList.Remove(Language.GetString(LocString.LastTarget));
-                oplchanged |= m.ObjPropList.Remove(Language.GetString(LocString.HarmfulTarget));
-                oplchanged |= m.ObjPropList.Remove(Language.GetString(LocString.BeneficialTarget));
-
-                if (oplchanged)
-                    m.OPLChanged();
-            }
-        }
-
-        private static void AddTextFlags(UOEntity m)
-        {
-            if (m != null)
-            {
-                bool oplchanged = false;
-
-                if (IsSmartTargetingEnabled())
-                {
-                    if (m_LastHarmTarg != null && m_LastHarmTarg.Serial == m.Serial)
-                    {
-                        oplchanged = true;
-                        m.ObjPropList.Add(Language.GetString(LocString.HarmfulTarget));
-                    }
-
-                    if (m_LastBeneTarg != null && m_LastBeneTarg.Serial == m.Serial)
-                    {
-                        oplchanged = true;
-                        m.ObjPropList.Add(Language.GetString(LocString.BeneficialTarget));
-                    }
-                }
-
-                if (!oplchanged && m_LastTarget != null && m_LastTarget.Serial == m.Serial)
-                {
-                    oplchanged = true;
-                    m.ObjPropList.Add(Language.GetString(LocString.LastTarget));
-                }
-
-                if (oplchanged)
-                    m.OPLChanged();
-            }
-        }
-
         private static void LastTargetChanged()
         {
             if (m_LastTarget != null)
             {
                 bool lth = Config.GetInt("LTHilight") != 0;
 
-                if (m_OldLT.IsItem)
-                {
-                    RemoveTextFlags(World.FindItem(m_OldLT));
-                }
-                else
+                if (!m_OldLT.IsItem)
                 {
                     Mobile m = World.FindMobile(m_OldLT);
                     if (m != null)
                     {
                         if (lth)
                             Client.Instance.SendToClient(new MobileIncoming(m));
-
-                        RemoveTextFlags(m);
                     }
                 }
 
-                if (m_LastTarget.Serial.IsItem)
-                {
-                    AddTextFlags(World.FindItem(m_LastTarget.Serial));
-                }
-                else
+                if (!m_LastTarget.Serial.IsItem)
                 {
                     Mobile m = World.FindMobile(m_LastTarget.Serial);
                     if (m != null)
@@ -545,8 +488,6 @@ namespace Assistant
                             Client.Instance.SendToClient(new MobileIncoming(m));
 
                         CheckLastTargetRange(m);
-
-                        AddTextFlags(m);
                     }
                 }
 
@@ -558,31 +499,12 @@ namespace Assistant
         {
             if (m_LastBeneTarg != null)
             {
-                if (m_OldBeneficialLT.IsItem)
-                {
-                    RemoveTextFlags(World.FindItem(m_OldBeneficialLT));
-                }
-                else
-                {
-                    Mobile m = World.FindMobile(m_OldBeneficialLT);
-                    if (m != null)
-                    {
-                        RemoveTextFlags(m);
-                    }
-                }
-
-                if (m_LastBeneTarg.Serial.IsItem)
-                {
-                    AddTextFlags(World.FindItem(m_LastBeneTarg.Serial));
-                }
-                else
+                if (!m_LastBeneTarg.Serial.IsItem)
                 {
                     Mobile m = World.FindMobile(m_LastBeneTarg.Serial);
                     if (m != null)
                     {
                         CheckLastTargetRange(m);
-
-                        AddTextFlags(m);
                     }
                 }
 
@@ -594,31 +516,12 @@ namespace Assistant
         {
             if (m_LastHarmTarg != null)
             {
-                if (m_OldHarmfulLT.IsItem)
-                {
-                    RemoveTextFlags(World.FindItem(m_OldHarmfulLT));
-                }
-                else
-                {
-                    Mobile m = World.FindMobile(m_OldHarmfulLT);
-                    if (m != null)
-                    {
-                        RemoveTextFlags(m);
-                    }
-                }
-
-                if (m_LastHarmTarg.Serial.IsItem)
-                {
-                    AddTextFlags(World.FindItem(m_LastHarmTarg.Serial));
-                }
-                else
+                if (!m_LastHarmTarg.Serial.IsItem)
                 {
                     Mobile m = World.FindMobile(m_LastHarmTarg.Serial);
                     if (m != null)
                     {
                         CheckLastTargetRange(m);
-
-                        AddTextFlags(m);
                     }
                 }
 
