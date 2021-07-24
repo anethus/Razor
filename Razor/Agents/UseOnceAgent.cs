@@ -48,7 +48,7 @@ namespace Assistant.Agents
 
             Number = 0;
 
-            Agent.OnItemCreated += new ItemCreatedEventHandler(CheckItemOPL);
+            Agent.OnItemCreated += new ItemCreatedEventHandler(OnItemCreated);
         }
 
         public override void Clear()
@@ -56,7 +56,7 @@ namespace Assistant.Agents
             m_Items.Clear();
         }
 
-        private void CheckItemOPL(Item newItem)
+        private void OnItemCreated(Item newItem)
         {
             for (int i = 0; i < m_Items.Count; i++)
             {
@@ -65,7 +65,6 @@ namespace Assistant.Agents
                     if (newItem.Serial == (Serial) m_Items[i])
                     {
                         m_Items[i] = newItem;
-                        newItem.ObjPropList.Add(Language.GetString(LocString.UseOnce));
                         break;
                     }
                 }
@@ -172,17 +171,6 @@ namespace Assistant.Agents
                     if (MessageBox.Show(Language.GetString(LocString.Confirm), Language.GetString(LocString.ClearList),
                             MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        for (int i = 0; i < m_Items.Count; i++)
-                        {
-                            if (m_Items[i] is Item)
-                            {
-                                Item item = (Item) m_Items[i];
-
-                                item.ObjPropList.Remove(Language.GetString(LocString.UseOnce));
-                                item.OPLChanged();
-                            }
-                        }
-
                         m_SubList.Items.Clear();
                         m_Items.Clear();
                     }
@@ -219,9 +207,6 @@ namespace Assistant.Agents
                     return;
                 }
 
-                item.ObjPropList.Add(Language.GetString(LocString.UseOnce));
-                item.OPLChanged();
-
                 m_Items.Add(item);
                 if (m_SubList != null)
                 {
@@ -244,9 +229,6 @@ namespace Assistant.Agents
                     {
                         if (((Item) m_Items[i]).Serial == serial)
                         {
-                            ((Item) m_Items[i]).ObjPropList.Remove(Language.GetString(LocString.UseOnce));
-                            ((Item) m_Items[i]).OPLChanged();
-
                             rem = true;
                         }
                     }
@@ -290,8 +272,6 @@ namespace Assistant.Agents
 
                         if (toAdd != null)
                         {
-                            toAdd.ObjPropList.Add(Language.GetString(LocString.UseOnce));
-                            toAdd.OPLChanged();
                             m_Items.Add(toAdd);
 
                             if (m_SubList != null)
@@ -377,9 +357,6 @@ namespace Assistant.Agents
 
                 if (item != null)
                 {
-                    item.ObjPropList.Remove(Language.GetString(LocString.UseOnce));
-                    item.OPLChanged();
-
                     World.Player.SendMessage(LocString.UseOnceStatus, item, m_Items.Count);
                     PlayerData.DoubleClick(item);
                 }

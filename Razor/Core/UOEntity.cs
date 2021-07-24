@@ -39,12 +39,6 @@ namespace Assistant
         private ushort m_Hue;
         private bool m_Deleted;
         private ContextMenuList m_ContextMenu = new ContextMenuList();
-        protected ObjectPropertyList m_ObjPropList = null;
-
-        public ObjectPropertyList ObjPropList
-        {
-            get { return m_ObjPropList; }
-        }
 
         public virtual void AfterLoad()
         {
@@ -52,8 +46,6 @@ namespace Assistant
 
         public UOEntity(Serial ser)
         {
-            m_ObjPropList = new ObjectPropertyList(this);
-
             m_Serial = ser;
             m_Deleted = false;
         }
@@ -105,43 +97,6 @@ namespace Assistant
         public override int GetHashCode()
         {
             return m_Serial.GetHashCode();
-        }
-
-        public int OPLHash
-        {
-            get
-            {
-                if (m_ObjPropList != null)
-                    return m_ObjPropList.Hash;
-                else
-                    return 0;
-            }
-            set
-            {
-                if (m_ObjPropList != null)
-                    m_ObjPropList.Hash = value;
-            }
-        }
-
-        public bool ModifiedOPL
-        {
-            get { return m_ObjPropList.Customized; }
-        }
-
-        public void ReadPropertyList(PacketReader p)
-        {
-            m_ObjPropList.Read(p);
-        }
-
-        /*public Packet BuildOPLPacket()
-        { 
-            return m_ObjPropList.BuildPacket();
-        }*/
-
-        public void OPLChanged()
-        {
-            //Client.Instance.SendToClient( m_ObjPropList.BuildPacket() );
-            Client.Instance.SendToClient(new OPLInfo(Serial, OPLHash));
         }
     }
 }

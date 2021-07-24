@@ -157,12 +157,7 @@ namespace Assistant.Core
                     if (m == null)
                         return;
 
-                    if (AddFriend(m.Name, serial))
-                    {
-                        m.ObjPropList.Add(Language.GetString(LocString.RazorFriend));
-                        m.OPLChanged();
-                    }
-                    else
+                    if (!AddFriend(m.Name, serial))
                     {
                         World.Player.SendMessage(MsgLevel.Warning, $"'{m.Name}' is already in '{GroupName}'");
                     }
@@ -202,11 +197,7 @@ namespace Assistant.Core
                 {
                     if (!IsFriend(mobile.Serial) && mobile.Serial.IsMobile && mobile.Serial != World.Player.Serial)
                     {
-                        if (AddFriend(mobile.Name, mobile.Serial))
-                        {
-                            mobile.ObjPropList.Add(Language.GetString(LocString.RazorFriend));
-                            mobile.OPLChanged();
-                        }
+                        AddFriend(mobile.Name, mobile.Serial);
                     }
                 }
             }
@@ -220,11 +211,7 @@ namespace Assistant.Core
                     if (!IsFriend(mobile.Serial) && mobile.Serial.IsMobile && mobile.Serial != World.Player.Serial &&
                         mobile.IsHuman)
                     {
-                        if (AddFriend(mobile.Name, mobile.Serial))
-                        {
-                            mobile.ObjPropList.Add(Language.GetString(LocString.RazorFriend));
-                            mobile.OPLChanged();
-                        }
+                        AddFriend(mobile.Name, mobile.Serial);
                     }
                 }
             }

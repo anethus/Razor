@@ -71,8 +71,6 @@ namespace Assistant.Agents
 
             HotKey.Add(HKCategory.Targets, LocString.AddToIgnore, new HotKeyCallback(AddToIgnoreList));
             HotKey.Add(HKCategory.Targets, LocString.RemoveFromIgnore, new HotKeyCallback(RemoveFromIgnoreList));
-
-            Agent.OnMobileCreated += new MobileCreatedEventHandler(OPLCheckIgnore);
         }
 
         public override void Clear()
@@ -183,18 +181,6 @@ namespace Assistant.Agents
                     if (MessageBox.Show(Language.GetString(LocString.Confirm), Language.GetString(LocString.ClearList),
                             MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        foreach (Serial s in m_Chars)
-                        {
-                            Mobile m = World.FindMobile(s);
-                            if (m != null)
-                            {
-                                if (m.ObjPropList.Remove(Language.GetString(LocString.RazorIgnored)))
-                                {
-                                    m.OPLChanged();
-                                }
-                            }
-                        }
-
                         m_Chars.Clear();
                         m_SubList.Items.Clear();
                     }
@@ -211,14 +197,6 @@ namespace Assistant.Agents
             }
         }
 
-        private void OPLCheckIgnore(Mobile m)
-        {
-            if (IsIgnored(m.Serial))
-            {
-                m.ObjPropList.Add(Language.GetString(LocString.RazorIgnored));
-            }
-        }
-
         private void OnAddTarget(bool location, Serial serial, Point3D loc, ushort gfx)
         {
             Engine.MainWindow.SafeAction(s => s.ShowMe());
@@ -231,13 +209,6 @@ namespace Assistant.Agents
                     m_Chars.Add(serial);
 
                     Add2List(serial);
-
-                    Mobile m = World.FindMobile(serial);
-                    if (m != null)
-                    {
-                        m.ObjPropList.Add(Language.GetString(LocString.RazorIgnored));
-                        m.OPLChanged();
-                    }
                 }
             }
         }
@@ -289,15 +260,6 @@ namespace Assistant.Agents
                 }
 
                 m_SubList.EndUpdate();
-
-                Mobile m = World.FindMobile(serial);
-                if (m != null)
-                {
-                    if (m.ObjPropList.Remove(Language.GetString(LocString.RazorIgnored)))
-                    {
-                        m.OPLChanged();
-                    }
-                }
             }
         }
 

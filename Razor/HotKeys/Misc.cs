@@ -445,9 +445,6 @@ namespace Assistant.HotKeys
                     _grabHotBag = serial;
                     Config.SetProperty("GrabHotBag", serial.Value.ToString());
 
-                    hb.ObjPropList.Add(Language.GetString(LocString.GrabHB));
-                    hb.OPLChanged();
-
                     World.Player.SendMessage(MsgLevel.Force, "Grab Item HotBag Set");
                 }
                 else
