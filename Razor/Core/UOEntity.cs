@@ -40,10 +40,6 @@ namespace Assistant
         private bool m_Deleted;
         private ContextMenuList m_ContextMenu = new ContextMenuList();
 
-        public virtual void AfterLoad()
-        {
-        }
-
         public UOEntity(Serial ser)
         {
             m_Serial = ser;

@@ -92,30 +92,6 @@ namespace Assistant
 
         private byte m_GridNum;
 
-        public override void AfterLoad()
-        {
-            m_Items = new List<Item>();
-
-            for (int i = 0; i < Serial.Serials.Count; i++)
-            {
-                Serial s = Serial.Serials[i];
-                if (s.IsItem)
-                {
-                    Item item = World.FindItem(s);
-
-                    if (item != null)
-                    {
-                        m_Items[i] = item;
-                    }
-
-                    Serial.Serials.RemoveAt(i);
-                    i--;
-                }
-            }
-
-            UpdateContainer();
-        }
-
         public Item(Serial serial) : base(serial)
         {
             m_Items = new List<Item>();
@@ -177,8 +153,6 @@ namespace Assistant
                     m_Name = null;
             }
         }
-
-        public string DisplayName => m_ItemID.Value < Ultima.TileData.ItemTable.Length ? Ultima.TileData.ItemTable[m_ItemID.Value].Name : string.Empty;
 
         public Layer Layer
         {
@@ -475,14 +449,6 @@ namespace Assistant
             return flags;
         }
 
-        public int DistanceTo(Mobile m)
-        {
-            int x = Math.Abs(this.Position.X - m.Position.X);
-            int y = Math.Abs(this.Position.Y - m.Position.Y);
-
-            return x > y ? x : y;
-        }
-
         public void ProcessPacketFlags(byte flags)
         {
             m_Visible = ((flags & 0x80) == 0);
@@ -713,82 +679,6 @@ namespace Assistant
         {
             get { return m_HousePacket; }
             set { m_HousePacket = value; }
-        }
-
-        public void MakeHousePacket()
-        {
-            m_HousePacket = null;
-
-            try
-            {
-                // 3 locations... which is right? all of them? wtf?
-                //"Desktop/{0}/{1}/{2}/Multicache.dat", World.AccountName, World.ShardName, World.OrigPlayerName
-                //"Desktop/{0}/{1}/{2}/Multicache.dat", World.AccountName, World.ShardName, World.Player.Name );
-                //"Desktop/{0}/Multicache.dat", World.AccountName );
-                string path = Ultima.Files.GetFilePath(
-                    $"Desktop/{World.AccountName}/{World.ShardName}/{World.OrigPlayerName}/Multicache.dat");
-                if (string.IsNullOrEmpty(path) || !File.Exists(path))
-                    return;
-
-                using (StreamReader reader =
-                    new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                {
-                    string line;
-                    reader.ReadLine(); // ver
-                    int skip = 0;
-                    int count = 0;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if (count++ < skip || line == "" || line[0] == ';')
-                            continue;
-
-                        string[] split = line.Split(' ', '\t');
-                        if (split.Length <= 0)
-                            return;
-
-                        skip = 0;
-                        Serial ser = (uint) Utility.ToInt32(split[0], 0);
-                        int rev = Utility.ToInt32(split[1], 0);
-                        int lines = Utility.ToInt32(split[2], 0);
-
-                        if (ser == this.Serial)
-                        {
-                            m_HouseRev = rev;
-                            MultiTileEntry[] tiles = new MultiTileEntry[lines];
-                            count = 0;
-
-                            Ultima.MultiComponentList mcl = Ultima.Multis.GetComponents(m_ItemID);
-
-                            while ((line = reader.ReadLine()) != null && count < lines)
-                            {
-                                split = line.Split(' ', '\t');
-
-                                tiles[count] = new MultiTileEntry();
-                                tiles[count].m_ItemID = (ushort) Utility.ToInt32(split[0], 0);
-                                tiles[count].m_OffsetX = (short) (Utility.ToInt32(split[1], 0) + mcl.Center.X);
-                                tiles[count].m_OffsetX = (short) (Utility.ToInt32(split[2], 0) + mcl.Center.Y);
-                                tiles[count].m_OffsetX = (short) Utility.ToInt32(split[3], 0);
-
-                                count++;
-                            }
-
-                            m_HousePacket = new DesignStateDetailed(Serial, m_HouseRev, mcl.Min.X, mcl.Min.Y, mcl.Max.X,
-                                mcl.Max.Y, tiles).Compile();
-                            break;
-                        }
-                        else
-                        {
-                            skip = lines;
-                        }
-
-                        count = 0;
-                    }
-                }
-            }
-            catch // ( Exception e )
-            {
-                //Engine.LogCrash( e );
-            }
         }
     }
 }
