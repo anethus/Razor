@@ -4075,11 +4075,12 @@ namespace Assistant
             Config.SetProperty("MessageLevel", msglvl.SelectedIndex);
         }
 
-        private void screenPrev_Click(object sender, System.EventArgs e)
+        private void screenPrev_Click(object sender, EventArgs e)
         {
-            string file = screensList.SelectedItem as String;
-            if (file != null)
-                System.Diagnostics.Process.Start(Path.Combine(Config.GetString("CapPath"), file));
+            if (screensList.SelectedItem is string file)
+            {
+                RunOpenProcess(Path.Combine(Config.GetString("CapPath"), file));
+            }
         }
 
         private Timer m_ResizeTimer = Timer.DelayedCallback(TimeSpan.FromSeconds(1.0), new TimerCallback(ForceSize));
@@ -4512,7 +4513,6 @@ namespace Assistant
             {
                 string backupTime = $"{DateTime.Now:yyyyMMdd-HHmmss}";
                 string backupDir = Path.Combine(Config.GetAppSetting<string>("BackupPath"), backupTime);
-                ;
 
                 if (string.IsNullOrEmpty(backupDir))
                     return;
@@ -5472,10 +5472,14 @@ namespace Assistant
 
             FolderBrowserDialog folder = new FolderBrowserDialog();
             folder.Description = "Select Backup Folder";
-            folder.SelectedPath = Config.GetAppSetting<string>("BackupPath");
+            if (Directory.Exists(Config.GetAppSetting<string>("BackupPath")))
+            {
+                folder.SelectedPath = Config.GetAppSetting<string>("BackupPath");
+            }
+
             folder.ShowNewFolderButton = true;
 
-            if (folder.ShowDialog(this) == DialogResult.OK)
+            if (folder.ShowDialog(this) == DialogResult.OK && !string.IsNullOrWhiteSpace(folder.SelectedPath))
             {
                 Config.SetAppSetting("BackupPath", folder.SelectedPath);
             }
@@ -5483,13 +5487,7 @@ namespace Assistant
 
         private void openBackupFolder_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Process.Start(Config.GetAppSetting<string>("BackupPath"));
-            }
-            catch
-            {
-            }
+            RunOpenProcess(Config.GetAppSetting<string>("BackupPath"));
         }
 
         private void targetIndicatorFormat_TextChanged(object sender, EventArgs e)
@@ -7538,14 +7536,23 @@ namespace Assistant
 
         private void openScreenshotFolder_Click(object sender, EventArgs e)
         {
+            RunOpenProcess(Config.GetString("CapPath"));
+        }
+
+        /// <summary>
+        /// Run Open Process
+        /// </summary>
+        /// <param name="path">Path to open file or folder</param>
+        private void RunOpenProcess(string path)
+        {
             try
             {
-                var psi = new ProcessStartInfo { FileName = Config.GetString("CapPath"), UseShellExecute = true };
+                var psi = new ProcessStartInfo { FileName = path, UseShellExecute = true };
                 Process.Start(psi);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Unable to open directory", MessageBoxButtons.OK,
+                MessageBox.Show(this, ex.Message, "Unable to open", MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
         }
