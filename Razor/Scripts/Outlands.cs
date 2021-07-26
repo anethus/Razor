@@ -75,6 +75,11 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
             Interpreter.RegisterExpressionHandler("dead", Dead);
             Interpreter.RegisterExpressionHandler("targetexists", TargetExists);
+            Interpreter.RegisterExpressionHandler("maxweight", MaxWeight);
+            Interpreter.RegisterExpressionHandler("diffweight", Diffweight);
+            Interpreter.RegisterExpressionHandler("diffhits", Diffhits);
+            Interpreter.RegisterExpressionHandler("diffstam", Diffstam);
+            Interpreter.RegisterExpressionHandler("diffmana", Diffmana);
 
             // Gump
             Interpreter.RegisterExpressionHandler("gumpexist", GumpExist);
@@ -657,6 +662,47 @@ namespace Assistant.Scripts
                 return true;
 
             return Targeting.CursorType == type;
+        }
+
+
+        private static int MaxWeight(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return -1;
+
+            return World.Player.MaxWeight;
+        }
+
+        private static int Diffweight(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return -1;
+
+            return Math.Abs(World.Player.MaxWeight - World.Player.Weight);
+        }
+
+        private static int Diffhits(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return -1;
+
+            return Math.Abs(World.Player.HitsMax - World.Player.Hits);
+        }
+
+        private static int Diffstam(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return -1;
+
+            return Math.Abs(World.Player.StamMax - World.Player.Stam);
+        }
+
+        private static int Diffmana(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return -1;
+
+            return Math.Abs(World.Player.ManaMax - World.Player.Mana);
         }
 
         /// <summary>
