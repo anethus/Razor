@@ -67,6 +67,12 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("name", GetName);
             Interpreter.RegisterExpressionHandler("findlayer", FindLayer);
             Interpreter.RegisterExpressionHandler("find", Find);
+            Interpreter.RegisterExpressionHandler("targetexists", TargetExists);
+            Interpreter.RegisterExpressionHandler("maxweight", MaxWeight);
+            Interpreter.RegisterExpressionHandler("diffweight", Diffweight);
+            Interpreter.RegisterExpressionHandler("diffhits", Diffhits);
+            Interpreter.RegisterExpressionHandler("diffstam", Diffstam);
+            Interpreter.RegisterExpressionHandler("diffmana", Diffmana);
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
@@ -74,7 +80,6 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
             Interpreter.RegisterExpressionHandler("dead", Dead);
-            Interpreter.RegisterExpressionHandler("targetexists", TargetExists);
 
             // Gump
             Interpreter.RegisterExpressionHandler("gumpexist", GumpExist);
@@ -657,6 +662,47 @@ namespace Assistant.Scripts
                 return true;
 
             return Targeting.CursorType == type;
+        }
+
+
+        private static int MaxWeight(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return 0;
+
+            return World.Player.MaxWeight;
+        }
+
+        private static int Diffweight(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return 0;
+
+            return World.Player.MaxWeight - World.Player.Weight;
+        }
+
+        private static int Diffhits(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return 0;
+
+            return World.Player.HitsMax - World.Player.Hits;
+        }
+
+        private static int Diffstam(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return 0;
+
+            return World.Player.StamMax - World.Player.Stam;
+        }
+
+        private static int Diffmana(string expression, Variable[] args, bool quiet)
+        {
+            if (World.Player == null)
+                return 0;
+
+            return World.Player.ManaMax - World.Player.Mana;
         }
 
         /// <summary>
