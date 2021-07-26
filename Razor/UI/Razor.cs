@@ -4077,9 +4077,20 @@ namespace Assistant
 
         private void screenPrev_Click(object sender, System.EventArgs e)
         {
-            string file = screensList.SelectedItem as String;
-            if (file != null)
-                System.Diagnostics.Process.Start(Path.Combine(Config.GetString("CapPath"), file));
+
+            if (screensList.SelectedItem is string file)
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo { FileName = Path.Combine(Config.GetString("CapPath"), file), UseShellExecute = true };
+                    Process.Start(psi);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, ex.Message, "Unable to open screenshot", MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+            }
         }
 
         private Timer m_ResizeTimer = Timer.DelayedCallback(TimeSpan.FromSeconds(1.0), new TimerCallback(ForceSize));
