@@ -263,6 +263,43 @@ namespace Assistant.Scripts.Helpers
             return (src, result[0], result[1], result[2]);
         }
 
+        /// <summary>
+        /// Deconstruct arguments
+        /// </summary>
+        /// <param name="args">Array with arguments</param>
+        public static (Serial, int, int) ParseCountArguments(Variable[] args)
+        {
+            int[] result = { -1, -1 };
+
+            Serial src = Serial.SelfAndBackpack;
+
+            if (args.Length > 1)
+            {
+                if (args[1].AsString(false) == "true")
+                {
+                    src = Serial.SelfBackpackAndGround;
+                }
+                else
+                {
+                    src = args[1].AsSerial();
+                }
+            }
+
+            // Hue
+            if (args.Length > 2)
+            {
+                result[0] = IsNumberOrAny(args[2].AsString());
+            }
+
+            // Range
+            if (args.Length > 3)
+            {
+                result[1] = IsNumberOrAny(args[3].AsString());
+            }
+
+            return (src, result[0], result[1]);
+        }
+
         public static void SendWarning(string command, string message, bool quiet)
         {
             if (!quiet)
