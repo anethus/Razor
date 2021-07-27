@@ -67,6 +67,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("name", GetName);
             Interpreter.RegisterExpressionHandler("findlayer", FindLayer);
             Interpreter.RegisterExpressionHandler("find", Find);
+            Interpreter.RegisterExpressionHandler("counttype", CountType);
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
@@ -628,6 +629,30 @@ namespace Assistant.Scripts
             }
 
             return Serial.Zero;
+        }
+
+        private static uint CountType(string expression, Variable[] args, bool quiet)
+        {
+            if (args.Length == 0)
+            {
+                throw new RunTimeError("Usage: counttype (name or graphic) [src] [hue] [range]");
+            }
+
+            var name = args[0].AsString();
+            Serial gfx = Utility.ToUInt16(name, 0);
+
+            (Serial src, int hue, int range) = CommandHelper.ParseCountArguments(args);
+
+            List<Item> items;
+
+            if (gfx == 0)
+            {
+                items = CommandHelper.GetItemsByName(name, hue, src, -1, range);
+                return (uint) items.Count;
+            }
+
+            items = CommandHelper.GetItemsById((ushort)gfx.Value, hue, src, -1, range);
+            return (uint) items.Count;
         }
 
         private static readonly Dictionary<string, byte> _targetMap = new Dictionary<string, byte>
