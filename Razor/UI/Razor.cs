@@ -7554,7 +7554,7 @@ namespace Assistant
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Unable to open screenshot", MessageBoxButtons.OK,
+                MessageBox.Show(this, ex.Message, "Unable to open", MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
         }
