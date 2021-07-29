@@ -156,6 +156,9 @@ namespace Assistant.Scripts.Helpers
                     continue;
                 }
 
+                if (Interpreter.CheckIgnored(m.Serial))
+                    continue;
+
                 mobiles.Add(m);
             }
 
@@ -193,6 +196,9 @@ namespace Assistant.Scripts.Helpers
                 {
                     continue;
                 }
+
+                if (Interpreter.CheckIgnored(m.Serial))
+                    continue;
 
                 mobiles.Add(m);
             }
