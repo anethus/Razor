@@ -275,19 +275,10 @@ namespace Assistant.Scripts
 
         private static bool WaitForGump(string command, Variable[] args, bool quiet, bool force)
         {
-            if (args.Length < 1)
-            {
-                throw new RunTimeError("Usage: waitforgump (gumpId/'any') [timeout]");
-            }
-
             uint gumpId = 0;
             bool strict = false;
 
-            if (args[0].AsString().IndexOf("any", StringComparison.InvariantCultureIgnoreCase) != -1)
-            {
-                strict = false;
-            }
-            else
+            if (args.Length > 0)
             {
                 gumpId = Utility.ToUInt32(args[0].AsString(), 0);
 
@@ -1032,10 +1023,10 @@ namespace Assistant.Scripts
 
             var gumpS = World.Player.GumpList[gumpId].GumpSerial;
 
-            Client.Instance.SendToClient(new CloseGump(gumpId));
             Client.Instance.SendToServer(new GumpResponse(gumpS, gumpId,
                 buttonId, new int[] { }, new GumpTextEntry[] { }));
 
+            Client.Instance.SendToClient(new CloseGump(gumpId));
             World.Player.HasGump = false;
 
             return true;

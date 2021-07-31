@@ -221,6 +221,26 @@ namespace Assistant.Scripts.Helpers
         }
 
         /// <summary>
+        /// Check if passed string is number and assign out variable to that number
+        /// </summary>
+        /// <param name="sNumber">String with number</param>
+        public static uint IsUNumberOrAny(string sNumber)
+        {
+            var num = Utility.ToUInt32(sNumber, 0);
+            if (num != 0)
+            {
+                return num;
+            }
+
+            if (sNumber.ToLower() != "any")
+            {
+                throw new RunTimeError("Wrong parameter");
+            }
+
+            return UInt32.MaxValue;
+        }
+
+        /// <summary>
         /// Deconstruct arguments
         /// </summary>
         /// <param name="args">Array with arguments</param>

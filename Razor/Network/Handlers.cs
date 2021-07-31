@@ -2560,6 +2560,9 @@ namespace Assistant
 
                 World.Player.CurrentGumpStrings.AddRange(gumpStrings);
 
+                if (World.Player.GumpList.ContainsKey(World.Player.CurrentGumpI))
+                    World.Player.GumpList.Remove(World.Player.CurrentGumpI);
+
                 World.Player.GumpList.Add(World.Player.CurrentGumpI, new PlayerData.GumpInfo(World.Player.CurrentGumpS, World.Player.CurrentGumpI, gumpStrings));
                 World.Player.CurrentGumpRawData = layout; // Get raw data of current gump
             }
