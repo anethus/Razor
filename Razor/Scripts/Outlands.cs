@@ -83,7 +83,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("dead", Dead);
 
             // Gump
-            Interpreter.RegisterExpressionHandler("gumpexist", GumpExist);
+            Interpreter.RegisterExpressionHandler("gumpexists", GumpExists);
             Interpreter.RegisterExpressionHandler("ingump", InGump);
         }
 
@@ -674,7 +674,7 @@ namespace Assistant.Scripts
 
             if (args.Length > 0)
             {
-                if (!_targetMap.TryGetValue(args[0].AsString(), out type))
+                if (!_targetMap.TryGetValue(args[0].AsString().ToLower(), out type))
                 {
                     throw new RunTimeError("Invalid target type");
                 }
@@ -737,19 +737,19 @@ namespace Assistant.Scripts
         /// <param name="args">Args - should contain gump id or any</param>
         /// <param name="quiet">Not used</param>
         /// <returns></returns>
-        private static bool GumpExist(string expression, Variable[] args, bool quiet)
+        private static bool GumpExists(string expression, Variable[] args, bool quiet)
         {
             if (args.Length != 1)
-                throw new RunTimeError("Usage: gumpexist (gumpId/'any')");
+                throw new RunTimeError("Usage: gumpexists (gumpId/'any')");
 
-            var gumpId = CommandHelper.IsNumberOrAny(args[0].AsString());
+            var gumpId = CommandHelper.IsUNumberOrAny(args[0].AsString());
 
             // If any just return if user have gump
-            if (gumpId == -1)
+            if (gumpId == uint.MaxValue)
                 return World.Player.GumpList.Count > 0;
 
             // If gumpId specific check for it
-            return World.Player.GumpList.ContainsKey((uint)gumpId);
+            return World.Player.GumpList.ContainsKey(gumpId);
         }
 
         /// <summary>
