@@ -71,12 +71,12 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("queued", Queued);
         }
 
-        private static bool Queued(string expression, Variable[] args, bool quiet)
+        private static bool Queued(string expression, Variable[] args, bool quiet, bool force)
         {
             return !ActionQueue.Empty;
         }
 
-        private static bool FindBuffDebuff(string expression, Variable[] args, bool quiet)
+        private static bool FindBuffDebuff(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
@@ -95,7 +95,7 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static uint FindType(string expression, Variable[] args, bool quiet)
+        private static uint FindType(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
@@ -153,27 +153,35 @@ namespace Assistant.Scripts
             return Serial.Zero;
         }
 
-        private static bool Mounted(string expression, Variable[] args, bool quiet)
+        private static bool Mounted(string expression, Variable[] args, bool quiet, bool force)
         {
             return World.Player != null && World.Player.GetItemOnLayer(Layer.Mount) != null;
         }
 
-        private static bool RHandEmpty(string expression, Variable[] args, bool quiet)
+        private static bool RHandEmpty(string expression, Variable[] args, bool quiet, bool force)
         {
             return World.Player != null && World.Player.GetItemOnLayer(Layer.RightHand) == null;
         }
 
-        private static bool LHandEmpty(string expression, Variable[] args, bool quiet)
+        private static bool LHandEmpty(string expression, Variable[] args, bool quiet, bool force)
         {
             return World.Player != null && World.Player.GetItemOnLayer(Layer.LeftHand) == null;
         }
 
-        private static bool Dead(string expression, Variable[] args, bool quiet)
+        private static bool Dead(string expression, Variable[] args, bool quiet, bool force)
         {
             return World.Player != null && World.Player.IsGhost;
         }
 
-        private static bool InSysMessage(string expression, Variable[] args, bool quiet)
+        /// <summary>
+        /// Check whenever message is in journal
+        /// </summary>
+        /// <param name="expression">Expression</param>
+        /// <param name="args">args</param>
+        /// <param name="quiet">quiet mode - not used</param>
+        /// <param name="force">Remove message in list or not</param>
+        /// <returns></returns>
+        private static bool InSysMessage(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
@@ -182,10 +190,10 @@ namespace Assistant.Scripts
 
             string text = args[0].AsString();
 
-            return SystemMessages.Exists(text);
+            return SystemMessages.Exists(text, !force);
         }
 
-        private static int Mana(string expression, Variable[] args, bool quiet)
+        private static int Mana(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -193,7 +201,7 @@ namespace Assistant.Scripts
             return World.Player.Mana;
         }
 
-        private static int MaxMana(string expression, Variable[] args, bool quiet)
+        private static int MaxMana(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -201,7 +209,7 @@ namespace Assistant.Scripts
             return World.Player.ManaMax;
         }
 
-        private static bool Poisoned(string expression, Variable[] args, bool quiet)
+        private static bool Poisoned(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return false;
@@ -209,12 +217,12 @@ namespace Assistant.Scripts
             return World.Player.Poisoned;
         }
 
-        private static bool Hidden(string expression, Variable[] args, bool quiet)
+        private static bool Hidden(string expression, Variable[] args, bool quiet, bool force)
         {
             return World.Player != null && !World.Player.Visible;
         }
 
-        private static int Hp(string expression, Variable[] args, bool quiet)
+        private static int Hp(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -222,7 +230,7 @@ namespace Assistant.Scripts
             return World.Player.Hits;
         }
 
-        private static int MaxHp(string expression, Variable[] args, bool quiet)
+        private static int MaxHp(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -230,7 +238,7 @@ namespace Assistant.Scripts
             return World.Player.HitsMax;
         }
 
-        private static int Stam(string expression, Variable[] args, bool quiet)
+        private static int Stam(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -238,7 +246,7 @@ namespace Assistant.Scripts
             return World.Player.Stam;
         }
 
-        private static int MaxStam(string expression, Variable[] args, bool quiet)
+        private static int MaxStam(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -246,7 +254,7 @@ namespace Assistant.Scripts
             return World.Player.StamMax;
         }
 
-        private static int Str(string expression, Variable[] args, bool quiet)
+        private static int Str(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -254,7 +262,7 @@ namespace Assistant.Scripts
             return World.Player.Str;
         }
 
-        private static int Dex(string expression, Variable[] args, bool quiet)
+        private static int Dex(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -262,7 +270,7 @@ namespace Assistant.Scripts
             return World.Player.Dex;
         }
 
-        private static int Int(string expression, Variable[] args, bool quiet)
+        private static int Int(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -270,7 +278,7 @@ namespace Assistant.Scripts
             return World.Player.Int;
         }
 
-        private static int Weight(string expression, Variable[] args, bool quiet)
+        private static int Weight(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -278,7 +286,7 @@ namespace Assistant.Scripts
             return World.Player.Weight;
         }
 
-        private static double SkillExpression(string expression, Variable[] args, bool quiet)
+        private static double SkillExpression(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
                 throw new RunTimeError("Usage: skill ('name of skill')");
@@ -297,7 +305,7 @@ namespace Assistant.Scripts
             return 0;
         }
 
-        private static int CountExpression(string expression, Variable[] args, bool quiet)
+        private static int CountExpression(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
                 throw new RunTimeError("Usage: count ('name of counter item')");
@@ -316,7 +324,7 @@ namespace Assistant.Scripts
             throw new RunTimeError($"Counter '{args[0].AsString()}' doesn't exist. Set it up in Razor under Display->Counters.");
         }
 
-        private static bool Position(string expression, Variable[] args, bool quiet)
+        private static bool Position(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return false;

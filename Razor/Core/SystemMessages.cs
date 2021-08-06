@@ -73,13 +73,13 @@ namespace Assistant.Core
 
             Messages.Add(text);
 
-            if (Messages.Count >= 25)
+            if (Messages.Count >= 100)
             {
-                Messages.RemoveRange(0, 10);
+                Messages.RemoveRange(0, 5);
             }
         }
 
-        public static bool Exists(string text)
+        public static bool Exists(string text, bool consume = true)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -88,11 +88,13 @@ namespace Assistant.Core
 
             for (int i = Messages.Count - 1; i >= 0; i--)
             {
-                if (Messages[i].IndexOf(text, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    Messages.RemoveRange(0, i + 1);
-                    return true;
-                }
+                if (Messages[i].IndexOf(text, StringComparison.OrdinalIgnoreCase) == -1)
+                    continue;
+
+                if(consume)
+                    Messages.RemoveAt( i );
+
+                return true;
             }
 
             return false;

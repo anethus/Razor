@@ -1178,6 +1178,14 @@ namespace Assistant.Scripts
             return true;
         }
 
+        /// <summary>
+        /// Wait for specific system message in journal
+        /// </summary>
+        /// <param name="command">Command</param>
+        /// <param name="args">Args</param>
+        /// <param name="quiet">Quiet mode - not used</param>
+        /// <param name="force">Flag determine removing message in journal or not</param>
+        /// <returns></returns>
         private static bool WaitForSysMsg(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
@@ -1185,13 +1193,13 @@ namespace Assistant.Scripts
                 throw new RunTimeError("Usage: waitforsysmsg 'message to wait for' [timeout]");
             }
 
-            if (SystemMessages.Exists(args[0].AsString()))
+            if (SystemMessages.Exists(args[0].AsString(), !force))
             {
                 Interpreter.ClearTimeout();
                 return true;
             }
 
-            Interpreter.Timeout(args.Length > 1 ? args[1].AsUInt() : 30000, () => { return true; });
+            Interpreter.Timeout(args.Length > 1 ? args[1].AsUInt() : 30000, () => true );
 
             return false;
         }

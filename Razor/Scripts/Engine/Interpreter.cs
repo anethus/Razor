@@ -1014,14 +1014,14 @@ namespace Assistant.Scripts.Engine
 
         private bool EvaluateUnaryExpression(ref ASTNode node)
         {
-            node = EvaluateModifiers(node, out bool quiet, out _, out bool not);
+            node = EvaluateModifiers(node, out bool quiet, out bool force, out bool not);
 
             var handler = Interpreter.GetExpressionHandler(node.Lexeme);
 
             if (handler == null)
                 throw new RunTimeError("Unknown expression");
 
-            var result = handler(node.Lexeme, ConstructArguments(ref node), quiet);
+            var result = handler(node.Lexeme, ConstructArguments(ref node), quiet, force);
 
             if (not)
                 return CompareOperands(ASTNodeType.EQUAL, result, false);
@@ -1048,7 +1048,7 @@ namespace Assistant.Scripts.Engine
         {
             IComparable val;
 
-            node = EvaluateModifiers(node, out bool quiet, out _, out _);
+            node = EvaluateModifiers(node, out bool quiet, out bool force, out _);
             switch (node.Type)
             {
                 case ASTNodeType.INTEGER:
@@ -1074,7 +1074,7 @@ namespace Assistant.Scripts.Engine
 
                         if (handler != null)
                         {
-                            val = handler(node.Lexeme, ConstructArguments(ref node), quiet);
+                            val = handler(node.Lexeme, ConstructArguments(ref node), quiet, force);
                             break;
                         }
 
@@ -1116,8 +1116,8 @@ namespace Assistant.Scripts.Engine
         private static Dictionary<string, DateTime> _timers = new Dictionary<string, DateTime>();
 
         // Expressions
-        public delegate IComparable ExpressionHandler(string expression, Variable[] args, bool quiet);
-        public delegate T ExpressionHandler<T>(string expression, Variable[] args, bool quiet) where T : IComparable;
+        public delegate IComparable ExpressionHandler(string expression, Variable[] args, bool quiet, bool force);
+        public delegate T ExpressionHandler<T>(string expression, Variable[] args, bool quiet, bool force) where T : IComparable;
 
         private static Dictionary<string, ExpressionHandler> _exprHandlers = new Dictionary<string, ExpressionHandler>();
 
@@ -1163,7 +1163,7 @@ namespace Assistant.Scripts.Engine
 
         public static void RegisterExpressionHandler<T>(string keyword, ExpressionHandler<T> handler) where T : IComparable
         {
-            _exprHandlers[keyword] = (expression, args, quiet) => handler(expression, args, quiet);
+            _exprHandlers[keyword] = (expression, args, quiet, force) => handler(expression, args, quiet, force);
         }
 
         public static ExpressionHandler GetExpressionHandler(string keyword)

@@ -356,7 +356,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static bool ListExists(string expression, Variable[] args, bool quiet)
+        private static bool ListExists(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: listexists ('list name')");
@@ -367,7 +367,7 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static int ListLength(string expression, Variable[] args, bool quiet)
+        private static int ListLength(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: list (list name) (operator) (value)");
@@ -375,7 +375,7 @@ namespace Assistant.Scripts
             return Interpreter.ListLength(args[0].AsString());
         }
 
-        private static bool InList(string expression, Variable[] args, bool quiet)
+        private static bool InList(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 2)
                 throw new RunTimeError("Usage: inlist (list name) (element)");
@@ -386,7 +386,7 @@ namespace Assistant.Scripts
             return false;
         }
 
-        private static int TimerValue(string expression, Variable[] args, bool quiet)
+        private static int TimerValue(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: timer ('timer name')");
@@ -396,7 +396,7 @@ namespace Assistant.Scripts
             return (int)ts.TotalMilliseconds;
         }
 
-        private static bool TimerExists(string expression, Variable[] args, bool quiet)
+        private static bool TimerExists(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: timerexists ('timer name')");
@@ -404,7 +404,7 @@ namespace Assistant.Scripts
             return Interpreter.TimerExists(args[0].AsString());
         }
 
-        private static int Followers(string expression, Variable[] args, bool quiet)
+        private static int Followers(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 0)
                 throw new RunTimeError("Usage: followers");
@@ -412,7 +412,7 @@ namespace Assistant.Scripts
             return World.Player.Followers;
         }
 
-        private static int Hue(string expression, Variable[] args, bool quiet)
+        private static int Hue(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: hue ('serial')");
@@ -425,7 +425,7 @@ namespace Assistant.Scripts
             return item.Hue;
         }
 
-        private static string GetName(string expression, Variable[] args, bool quiet)
+        private static string GetName(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return null;
@@ -433,7 +433,7 @@ namespace Assistant.Scripts
             return World.Player.Name;
         }
 
-        private static bool Paralyzed(string expression, Variable[] args, bool quiet)
+        private static bool Paralyzed(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return false;
@@ -441,7 +441,7 @@ namespace Assistant.Scripts
             return World.Player.Paralyzed;
         }
 
-        private static bool Blessed(string expression, Variable[] args, bool quiet)
+        private static bool Blessed(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return false;
@@ -449,7 +449,7 @@ namespace Assistant.Scripts
             return World.Player.Blessed;
         }
 
-        private static bool InWarmode(string expression, Variable[] args, bool quiet)
+        private static bool InWarmode(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return false;
@@ -478,7 +478,7 @@ namespace Assistant.Scripts
             { 7, "invulnerable" }
         };
 
-        private static string Notoriety(string expression, Variable[] args, bool quiet)
+        private static string Notoriety(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: noto (serial)");
@@ -503,8 +503,9 @@ namespace Assistant.Scripts
         /// <param name="expression">Expression</param>
         /// <param name="args">Args</param>
         /// <param name="quiet">Quiet messaging</param>
+        /// <param name="force">Force flag</param>
         /// <returns></returns>
-        private static bool Dead(string expression, Variable[] args, bool quiet)
+        private static bool Dead(string expression, Variable[] args, bool quiet, bool force)
         {
             // Default variable for dead = Self
             var mob = World.Player as Mobile;
@@ -524,7 +525,7 @@ namespace Assistant.Scripts
             return mob.IsGhost || mob.Dead;
         }
 
-        private static readonly Dictionary<string, Layer> _layerMap = new Dictionary<string, Layer>()
+        private static readonly Dictionary<string, Layer> LayerMap = new Dictionary<string, Layer>
         {
             {"righthand", Layer.RightHand},
             {"lefthand", Layer.LeftHand},
@@ -552,7 +553,7 @@ namespace Assistant.Scripts
             {"innerlegs", Layer.InnerLegs},
         };
 
-        private static uint FindLayer(string expression, Variable[] args, bool quiet)
+        private static uint FindLayer(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 2)
                 throw new RunTimeError("Usage: findlayer (serial) (layer)");
@@ -567,7 +568,7 @@ namespace Assistant.Scripts
                 return Serial.Zero;
             }
 
-            if (!_layerMap.TryGetValue(args[1].AsString(), out var layerName))
+            if (!LayerMap.TryGetValue(args[1].AsString(), out var layerName))
                 throw new RunTimeError("Invalid layer name");
 
             return m.GetItemOnLayer(layerName)?.Serial ?? Serial.Zero;
@@ -590,7 +591,7 @@ namespace Assistant.Scripts
             return true;
         }
 
-        private static uint Find(string expression, Variable[] args, bool quiet)
+        private static uint Find(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
@@ -636,7 +637,7 @@ namespace Assistant.Scripts
             return Serial.Zero;
         }
 
-        private static uint CountType(string expression, Variable[] args, bool quiet)
+        private static uint CountType(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length == 0)
             {
@@ -668,7 +669,7 @@ namespace Assistant.Scripts
             {"any", 3 }
         };
 
-        private static bool TargetExists(string expression, Variable[] args, bool quiet)
+        private static bool TargetExists(string expression, Variable[] args, bool quiet, bool force)
         {
             byte type = 3;
 
@@ -690,7 +691,7 @@ namespace Assistant.Scripts
         }
 
 
-        private static int MaxWeight(string expression, Variable[] args, bool quiet)
+        private static int MaxWeight(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -698,7 +699,7 @@ namespace Assistant.Scripts
             return World.Player.MaxWeight;
         }
 
-        private static int Diffweight(string expression, Variable[] args, bool quiet)
+        private static int Diffweight(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -706,7 +707,7 @@ namespace Assistant.Scripts
             return World.Player.MaxWeight - World.Player.Weight;
         }
 
-        private static int Diffhits(string expression, Variable[] args, bool quiet)
+        private static int Diffhits(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -714,7 +715,7 @@ namespace Assistant.Scripts
             return World.Player.HitsMax - World.Player.Hits;
         }
 
-        private static int Diffstam(string expression, Variable[] args, bool quiet)
+        private static int Diffstam(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -722,7 +723,7 @@ namespace Assistant.Scripts
             return World.Player.StamMax - World.Player.Stam;
         }
 
-        private static int Diffmana(string expression, Variable[] args, bool quiet)
+        private static int Diffmana(string expression, Variable[] args, bool quiet, bool force)
         {
             if (World.Player == null)
                 return 0;
@@ -737,7 +738,7 @@ namespace Assistant.Scripts
         /// <param name="args">Args - should contain gump id or any</param>
         /// <param name="quiet">Not used</param>
         /// <returns></returns>
-        private static bool GumpExists(string expression, Variable[] args, bool quiet)
+        private static bool GumpExists(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: gumpexists (gumpId/'any')");
@@ -758,8 +759,9 @@ namespace Assistant.Scripts
         /// <param name="expression">Expression</param>
         /// <param name="args">Should contain text and optional gumpid or any</param>
         /// <param name="quiet">Not used</param>
+        /// <param name="force">Force flag</param>
         /// <returns></returns>
-        private static bool InGump(string expression, Variable[] args, bool quiet)
+        private static bool InGump(string expression, Variable[] args, bool quiet, bool force)
         {
             if (args.Length < 1)
                 throw new RunTimeError("Usage: ingump (text) [gumpId/'any']");
