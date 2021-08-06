@@ -768,12 +768,12 @@ namespace Assistant.Scripts
             var text = args[0].AsString(false);
 
             // If gumpId passed get it, otherwise look at any
-            var gumpId = args.Length > 1 ? CommandHelper.IsNumberOrAny(args[1].AsString(false)) : -1;
+            var gumpId = args.Length > 1 ? CommandHelper.IsUNumberOrAny(args[1].AsString(false)) : uint.MaxValue;
 
-            if (gumpId > 0)
+            if (gumpId != uint.MaxValue)
             {
                 // Look in specific gump text
-                return World.Player.GumpList.TryGetValue((uint)gumpId, out var gumpInfo) && gumpInfo.GumpContext.Any(line => line.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
+                return World.Player.GumpList.TryGetValue(gumpId, out var gumpInfo) && gumpInfo.GumpContext.Any(line => line.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
             //Look in all gumps text
