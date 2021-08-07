@@ -390,7 +390,7 @@ namespace Assistant.Agents
                 gfx = item.ItemID;
             }
 
-            if (gfx == 0 || gfx >= 0x4000)
+            if (gfx == 0)
             {
                 return;
             }
@@ -420,7 +420,7 @@ namespace Assistant.Agents
             }
 
             m_Items.Add(item);
-            m_SubList.Items.Add(item);
+            Engine.MainWindow.SafeAction(m => m_SubList.Items.Add(item));
 
             World.Player?.SendMessage(MsgLevel.Force, LocString.ItemAdded);
         }
