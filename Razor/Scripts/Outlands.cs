@@ -20,7 +20,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Media;
 using System.Text;
 using Assistant.Core;
 using Assistant.HotKeys;
@@ -45,6 +47,8 @@ namespace Assistant.Scripts
             Interpreter.RegisterCommandHandler("settimer", SetTimer);
             Interpreter.RegisterCommandHandler("removetimer", RemoveTimer);
             Interpreter.RegisterCommandHandler("createtimer", CreateTimer);
+
+            Interpreter.RegisterCommandHandler("playsound", Playsound);
 
             Interpreter.RegisterCommandHandler("getlabel", GetLabel);
             Interpreter.RegisterCommandHandler("warmode", Warmode);
@@ -189,6 +193,26 @@ namespace Assistant.Scripts
                 throw new RunTimeError("Usage: createtimer (timer name)");
 
             Interpreter.CreateTimer(args[0].AsString());
+            return true;
+        }
+
+        private static bool Playsound(string command, Variable[] args, bool quiet, bool force)
+        {
+            if (args.Length != 1)
+            {
+                throw new RunTimeError("Usage: playsound (file name)");
+            }
+
+            var filePath = args[0].AsString(false);
+            if (!File.Exists(filePath))
+            {
+                CommandHelper.SendWarning(command, "Soundfile not found", quiet);
+                return true;
+            }
+
+            var sp = new SoundPlayer(filePath);
+            sp.PlaySync();
+
             return true;
         }
 
