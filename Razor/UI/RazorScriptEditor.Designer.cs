@@ -50,7 +50,6 @@ namespace Assistant.UI
             this.scriptLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.scriptEditor = new FastColoredTextBoxNS.FastColoredTextBox();
             this.scriptDocMap = new FastColoredTextBoxNS.DocumentMap();
-            this.scriptStatusStrip = new System.Windows.Forms.StatusStrip();
             this.scriptToolStrip.SuspendLayout();
             this.scriptLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).BeginInit();
@@ -222,20 +221,11 @@ namespace Assistant.UI
             this.scriptDocMap.TabIndex = 24;
             this.scriptDocMap.Target = null;
             // 
-            // scriptStatusStrip
-            // 
-            this.scriptStatusStrip.Location = new System.Drawing.Point(0, 514);
-            this.scriptStatusStrip.Name = "scriptStatusStrip";
-            this.scriptStatusStrip.Size = new System.Drawing.Size(801, 22);
-            this.scriptStatusStrip.TabIndex = 25;
-            this.scriptStatusStrip.Text = "statusStrip1";
-            // 
             // RazorScriptEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(801, 536);
-            this.Controls.Add(this.scriptStatusStrip);
             this.Controls.Add(this.scriptLayoutPanel);
             this.Controls.Add(this.scriptToolStrip);
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -269,6 +259,5 @@ namespace Assistant.UI
         private ToolStripButton scriptHelp;
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripButton scriptInfo;
-        private StatusStrip scriptStatusStrip;
     }
 }
