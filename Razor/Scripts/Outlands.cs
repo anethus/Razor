@@ -77,7 +77,7 @@ namespace Assistant.Scripts
 
             // Mobile flags
             Interpreter.RegisterExpressionHandler("paralyzed", Paralyzed);
-            Interpreter.RegisterExpressionHandler("blessed", Blessed);
+            Interpreter.RegisterExpressionHandler("invul", Blessed);
             Interpreter.RegisterExpressionHandler("warmode", InWarmode);
             Interpreter.RegisterExpressionHandler("noto", Notoriety);
             Interpreter.RegisterExpressionHandler("dead", Dead);
@@ -214,7 +214,11 @@ namespace Assistant.Scripts
             {
                 case GetLabelState.NONE:
                     _getLabelState = GetLabelState.WAITING_FOR_FIRST_LABEL;
-                    Interpreter.Timeout(2000, () => { return true; });
+                    Interpreter.Timeout(2000, () =>
+                    {
+                        _getLabelState = GetLabelState.NONE; 
+                        return true;
+                    });
 
                     // Single click the object
                     Client.Instance.SendToServer(new SingleClick((Serial)args[0].AsSerial()));
