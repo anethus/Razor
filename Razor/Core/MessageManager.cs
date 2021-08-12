@@ -31,6 +31,8 @@ namespace Assistant.Core
         public static Action<Packet, PacketHandlerEventArgs, Serial, ushort, MessageType, ushort, ushort, string, string, string> OnSystemMessage;
         public static Action<Packet, PacketHandlerEventArgs, Serial, ushort, MessageType, ushort, ushort, string, string, string> OnMobileMessage;
 
+        public static bool GetLabelCommand = false;
+
         public static void Initialize()
         {
             OnMobileMessage += HandleMobileMessage;
@@ -68,7 +70,10 @@ namespace Assistant.Core
 
                     if (source.IsMobile && source != World.Player.Serial)
                     {
-                        OnMobileMessage?.Invoke(p, args, source, graphic, type, hue, font, lang, sourceName, text);
+                        if(GetLabelCommand)
+                            OnLabelMessage?.Invoke(p, args, source, graphic, type, hue, font, lang, sourceName, text);
+                        else
+                            OnMobileMessage?.Invoke(p, args, source, graphic, type, hue, font, lang, sourceName, text);
                     }
                     break;
             }

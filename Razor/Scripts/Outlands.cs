@@ -216,7 +216,10 @@ namespace Assistant.Scripts
                     _getLabelState = GetLabelState.WAITING_FOR_FIRST_LABEL;
                     Interpreter.Timeout(2000, () =>
                     {
-                        _getLabelState = GetLabelState.NONE; 
+                        _onLabelMessage = null;
+                        MessageManager.OnLabelMessage -= _onLabelMessage;
+                        _getLabelState = GetLabelState.NONE;
+                        MessageManager.GetLabelCommand = false;
                         return true;
                     });
 
@@ -225,6 +228,11 @@ namespace Assistant.Scripts
 
                     // Capture all message responses
                     StringBuilder label = new StringBuilder();
+                    
+                    // Some messages from Outlands server are send in sequence of LabelType and RegularType
+                    // so we want to invoke that _onLabelMessage in both cases with delays
+                    MessageManager.GetLabelCommand = true;
+
                     _onLabelMessage = (p, a, source, graphic, type, hue, font, lang, sourceName, text) =>
                     {
                         if (source != serial)
@@ -241,7 +249,7 @@ namespace Assistant.Scripts
 
                         label.AppendLine(text);
 
-                        Interpreter.SetVariable(name, label.ToString(), false);
+                        Interpreter.SetVariable(name, label.ToString());
                     };
 
                     MessageManager.OnLabelMessage += _onLabelMessage;
@@ -253,6 +261,7 @@ namespace Assistant.Scripts
                     MessageManager.OnLabelMessage -= _onLabelMessage;
                     _onLabelMessage = null;
                     _getLabelState = GetLabelState.NONE;
+                    MessageManager.GetLabelCommand = false;
                     return true;
             }
 
