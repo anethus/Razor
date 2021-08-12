@@ -132,6 +132,11 @@ namespace Assistant.Scripts.Engine
         {
             _namespace.Remove(name);
         }
+        
+        public bool ExistVariable(string name)
+        {
+            return _namespace.ContainsKey(name);
+        }
 
         public void AddIgnore(Serial serial)
         {
@@ -1258,6 +1263,11 @@ namespace Assistant.Scripts.Engine
             _currentScope.ClearVariable(name);
         }
 
+        public static bool ExistVariable(string name)
+        {
+            return _currentScope.ExistVariable(name);
+        }
+
         public static uint GetAlias(string alias)
         {
             // If a handler is explicitly registered, call that.
@@ -1266,10 +1276,7 @@ namespace Assistant.Scripts.Engine
 
             var arg = GetVariable(alias);
 
-            if (arg == null)
-                return uint.MaxValue;
-
-            return arg.AsUInt();
+            return arg?.AsUInt() ?? uint.MaxValue;
         }
 
         public static void SetAlias(string alias, uint serial)
@@ -1280,6 +1287,11 @@ namespace Assistant.Scripts.Engine
         public static void ClearAlias(string alias)
         {
             _scope.ClearVariable(alias);
+        }
+
+        public static bool ExistAlias(string alias)
+        {
+            return _scope.ExistVariable(alias);
         }
 
         public static void CreateList(string name)

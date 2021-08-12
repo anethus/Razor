@@ -55,6 +55,7 @@ namespace Assistant.Scripts
             Interpreter.RegisterExpressionHandler("listexists", ListExists);
             Interpreter.RegisterExpressionHandler("list", ListLength);
             Interpreter.RegisterExpressionHandler("inlist", InList);
+            Interpreter.RegisterExpressionHandler("varexist", VarExist);
 
             Interpreter.RegisterCommandHandler("ignore", AddIgnore);
             Interpreter.RegisterCommandHandler("clearignore", ClearIgnore);
@@ -297,6 +298,23 @@ namespace Assistant.Scripts
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Check if variable of alias exist
+        /// </summary>
+        /// <param name="command">Cmd</param>
+        /// <param name="args">Variable or Alias Name</param>
+        /// <param name="quiet">True if variable, False if Alias</param>
+        /// <returns></returns>
+        private static bool VarExist(string command, Variable[] args, bool quiet)
+        {
+            if (args.Length != 1)
+                throw new RunTimeError("Usage: varexist (name)");
+            
+            var varName = args[0].AsString(false);
+
+            return quiet ? Interpreter.ExistVariable(varName) : Interpreter.ExistAlias(varName);
         }
 
         private static bool Rename(string command, Variable[] args, bool quiet, bool force)
