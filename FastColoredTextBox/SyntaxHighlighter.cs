@@ -359,17 +359,17 @@ namespace FastColoredTextBoxNS
 
             RazorCommandRegex =
                 new Regex(
-                    @"\b(attack|cast|dress|undress|dressconfig|target|targettype|targetloc|targetrelloc|dress|drop|waitfortarget|wft|dclick|dclicktype|dclickvar|usetype|useobject|droprelloc|lift|lifttype|waitforgump|gumpresponse|gumpclose|menu|menuresponse|waitformenu|promptresponse|waitforprompt|hotkey|say|msg|overhead|sysmsg|wait|pause|waitforstat|setability|setlasttarget|lasttarget|setvar|skill|useskill|walk|script|useonce|organizer|organize|org|restock|scav|scavenger|potion|clearsysmsg|clearjournal|whisper|yell|guild|alliance|emote|waitforsysmsg|wfsysmsg|clearall|virtue|rename|setskill|ignore|clearignore)\b",
+                    @"\b(attack|cast|dress|undress|dressconfig|target|targettype|targetloc|targetrelloc|dress|drop|waitfortarget|wft|dclick|dclicktype|dclickvar|usetype|useobject|droprelloc|lift|lifttype|waitforgump|gumpresponse|gumpclose|menu|menuresponse|waitformenu|promptresponse|waitforprompt|hotkey|say|msg|overhead|sysmsg|wait|pause|waitforstat|setability|setlasttarget|lasttarget|setvar|skill|useskill|walk|script|useonce|organizer|organize|org|restock|scav|scavenger|potion|clearsysmsg|clearjournal|whisper|yell|guild|alliance|emote|waitforsysmsg|wfsysmsg|clearall|virtue|rename|setskill|ignore|clearignore|poplist|pushlist|removelist|createlist|clearlist|settimer|removetimer|createtimer|settimer|removetimer|getlabel|unsetvar)\b",
                     RegexCompiledOption);
 
-            RazorLayerRegex =
+             RazorLayerRegex =
                 new Regex(
                     @"\b(RightHand|LeftHand|Shoes|Pants|Shirt|Head|Gloves|Ring|Talisman|Neck|Hair|Waist|InnerTorso|Bracelet|FacialHair|MiddleTorso|Earrings|Arms|Cloak|Backpack|OuterTorso|OuterLegs|InnerLegs|backpack|true|false|criminal|enemy|friend|friendly|grey|gray|innocent|murderer|red|blue|nonfriendly|cancel|clear)\b",
                     RegexCompiledOption);
 
             RazorExpressionRegex =
                 new Regex(
-                    @"\b(queued|position|insysmsg|insysmessage|findtype|findbuff|finddebuff|stam|maxstam|hp|maxhp|maxhits|hits|mana|maxmana|str|dex|int|poisoned|hidden|mounted|rhandempty|lhandempty|skill|count|counter|weight|dead|closest|close|rand|random|next|prev|previous|human|humanoid|monster|findlayer|dead|find|counttype)\b",
+                    @"\b(queued|position|insysmsg|insysmessage|findtype|findbuff|finddebuff|stam|maxstam|hp|maxhp|maxhits|hits|mana|maxmana|str|dex|int|poisoned|hidden|mounted|rhandempty|lhandempty|skill|count|counter|weight|dead|closest|close|rand|random|next|prev|previous|human|humanoid|monster|findlayer|dead|find|counttype|listexists|list|inlist|timer|timerexists|followers|hue|name|maxweight|diffweight|diffhits|diffstam|diffmana|paralyzed|invul|noto|dead|gumpexists|ingump|targetexists|counttype)\b",
                     RegexCompiledOption);
         }
 

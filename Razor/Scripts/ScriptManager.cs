@@ -568,8 +568,9 @@ namespace Assistant.Scripts
                     "wait", "pause", "waitforgump", "waitformenu", "waitforprompt", "waitfortarget", "clearsysmsg", "clearjournal",
                     "waitforsysmsg", "clearhands", "clearall", "virtue", "random",
                     "warmode", "getlabel", "createlist", "clearlist", "removelist", "pushlist", "poplist", "createtimer", "removetimer", "settimer",
-                    "unsetvar"
-
+                    "unsetvar", "ignore", "clearignore", "rename", "setskill", "noto", "ingump", "gumpexists", "dead", "invul", "paralyzed",
+                    "counttype", "diffmana", "diffstam", "diffhits", "diffweight", "maxweight", "targetexists", "find", "findlayer", "name",
+                    "followers", "hue", "timerexists", "timer",
                 };
 
             #endregion
@@ -605,11 +606,38 @@ namespace Assistant.Scripts
             tooltip = new ToolTipDescriptions("dclicktype",
                 new[]
                 {
-                        "dclicktype ('name of item') OR (graphicID) [inrange] or usetype ('name of item') OR (graphicID) [inrange]"
+                        "dclicktype ('name') OR ('graphic') [source] [hue] [quantity] [range]"
                 }, "N/A",
-                "This command will use (double-click) an item type either provided by the name or the graphic ID.\n\t\tIf you include the optional true parameter, items within range (2 tiles) will only be considered.",
-                "dclicktype 'dagger'\n\t\twaitfortarget\n\t\ttargettype 'robe'");
+                "This command will use (double-click) an item type either provided by the name or the graphic ID.\n\tYou can specify the source, color and search distance (or depth)",
+                "dclicktype 'dagger' 'backpack' 'any' 1 2\n\t\twaitfortarget\n\t\ttargettype 'robe'");
             descriptionCommands.Add("dclicktype", tooltip);
+
+            tooltip = new ToolTipDescriptions("findtype",
+                new[]
+                {
+                    "findtype ('name') OR ('graphic') [source] [hue] [quantity] [range]"
+                }, "N/A",
+                "This expression will find item or mobile by type either provided by the name or the graphic ID.\n\tYou can specify the source, color and search distance (or depth)",
+                "findtype 'an eagle' 'ground' 31337 1 2");
+            descriptionCommands.Add("findtype", tooltip);
+
+            tooltip = new ToolTipDescriptions("find",
+                new[]
+                {
+                    "find (serial) [src] [hue] [qty] [range]"
+                }, "True if mobile or item with given serial was found",
+                "Check if mobile or item with given has been found.\n\tYou can specify the source, color and search distance (or depth)",
+                "find 'an eagle' 'ground' 31337 1 2");
+            descriptionCommands.Add("find", tooltip);
+
+            tooltip = new ToolTipDescriptions("findlayer",
+                new[]
+                {
+                    "findlayer (serial) (layer)"
+                }, "Serial of founded item in passed layer, otherwise zero",
+                "Check if mobile with specified serial have item on a passed layer name.",
+                "if 'targetMe' 'ring'\n\tsay 'Nice ring'\nendif");
+            descriptionCommands.Add("findlayer", tooltip);
 
             tooltip = new ToolTipDescriptions("dress", new[] { "dress ('name of dress list')" }, "N/A",
                 "This command will execute a spec dress list you have defined in Razor.", "dress 'My Sunday Best'");
@@ -761,8 +789,8 @@ namespace Assistant.Scripts
             descriptionCommands.Add("target", tooltip);
 
             tooltip = new ToolTipDescriptions("targettype",
-                new[] { "targettype (graphic) or targettype ('name of item or mobile type') [inrangecheck]" }, "N/A",
-                "This command will target a specific type of mobile or item based on the graphic id or based on\n\tthe name of the item or mobile. If the optional parameter is passed\n\tin as true only items within the range of 2 tiles will be considered.",
+                new[] { "targettype ('name') OR ('graphic') [source] [hue] [quantity] [range]" }, "N/A",
+                "This command will target item or mobile by type either provided by the name or the graphic ID.\n\tYou can specify the source, color and search distance (or depth)",
                 "usetype 'dagger'\n\twaitfortarget\n\ttargettype 'robe'\n\tuseobject 0x4005ECAF\n\twaitfortarget\n\ttargettype 0x1f03\n\tuseobject 0x4005ECAF\n\twaitfortarget\n\ttargettype 0x1f03 true");
             descriptionCommands.Add("targettype", tooltip);
 
@@ -884,10 +912,16 @@ namespace Assistant.Scripts
                 "pushlist mylist myvalue front\n");
             descriptionCommands.Add("pushlist", tooltip);
 
+            tooltip = new ToolTipDescriptions("listexists",
+                new[] { "listexists ('list name')" }, "True if list specified by name exists",
+                "Check if list specified by list_name exist",
+                "if listexists myList\n\tpoplist mylist front\nendif\n");
+            descriptionCommands.Add("listexists", tooltip);
+
             tooltip = new ToolTipDescriptions("poplist",
                 new[] { "poplist ('list name') ('element value'/'front'/'back')" }, "N/A",
                 "Pop an element from the list",
-                "poplist mylist myvalue front\n");
+                "poplist mylist front\n");
             descriptionCommands.Add("poplist", tooltip);
 
             tooltip = new ToolTipDescriptions("createtimer",
@@ -908,6 +942,18 @@ namespace Assistant.Scripts
                 "settimer atimer 10\n");
             descriptionCommands.Add("settimer", tooltip);
 
+            tooltip = new ToolTipDescriptions("timerexists",
+                new[] { "timerexists ('timer name')" }, "Return true is target specified by name exists",
+                "Check if target with specified name exists",
+                "if timerexists 'clock'\n\tcreatetimer 'clock'\nendif\n");
+            descriptionCommands.Add("timerexists", tooltip);
+
+            tooltip = new ToolTipDescriptions("timer",
+                new[] { "timer ('timer name')" }, "Return value of timer specified by name",
+                "Get value of timer specified by name",
+                "if timer 'discoBuff' > 5000\n\tskill 'Discorance'\n\twft\n\ttarget 'spellBookSerial'\nendif\n");
+            descriptionCommands.Add("timer", tooltip);
+
             tooltip = new ToolTipDescriptions("unsetvar",
                 new[] { "unsetvar ('name')" }, "N/A",
                 "Unset a variable. If '!' is specified, unset a temporary variable. If both ! and @ are specified, unset a temporary local variable.",
@@ -919,6 +965,120 @@ namespace Assistant.Scripts
                 "Rename a creature (one of your followers) with the provided name",
                 "rename mypet fido\n");
             descriptionCommands.Add("rename", tooltip);
+
+            tooltip = new ToolTipDescriptions("gumpexists",
+                new[] { "gumpexists ('gumpId or any')" }, "True if gump exists",
+                "Check if gump with specified id or any exist",
+                "gumpexists 0x41434\n");
+            descriptionCommands.Add("gumpexists", tooltip);
+
+            tooltip = new ToolTipDescriptions("ingump",
+                new[] { "ingump ('text') [gumpId/any]" }, "True if text exists in gumps",
+                "Check if text in gump with specified id or any exists",
+                "ingump test any\n");
+            descriptionCommands.Add("ingump", tooltip);
+
+            tooltip = new ToolTipDescriptions("dead",
+                new[] { "dead ['serial']" }, "True mobile with serial is dead",
+                "Check if mobile (default 'self') is dead",
+                "if dead 0x43434\n\tcast 'Resurrection'\nendif\n");
+            descriptionCommands.Add("dead", tooltip);
+
+            tooltip = new ToolTipDescriptions("noto",
+                new[] { "noto ('serial')" }, "Name of the notority flag of mobile",
+                "Return Notority name of mobile by serial",
+                "if noto 0x43434 = 'innocent'\n\tcast 'Heal'\nendif\n");
+            descriptionCommands.Add("noto", tooltip);
+
+            tooltip = new ToolTipDescriptions("invul",
+                new[] { "invul" }, "True if player is invaluable",
+                "Check if player is invaluable",
+                "if invul\n\toverhead 'WoW'\nendif\n");
+            descriptionCommands.Add("invul", tooltip);
+
+            tooltip = new ToolTipDescriptions("paralyzed",
+                new[] { "paralyzed" }, "True if player is paralyzed",
+                "Check if player is paralyzed",
+                "if paralyzed\n\tsay [pouch\nendif\n");
+            descriptionCommands.Add("paralyzed", tooltip);
+
+            tooltip = new ToolTipDescriptions("counttype",
+                new[] { "counttype (name or graphic) [src] [hue] [range]" }, "Number of items in container",
+                "Get number of items by name or graphic.\n\tYou can specify the source, color and search distance (or depth)",
+                "if counttype 'dagger' 'ground'\n\torganizer 1\nendif\n");
+            descriptionCommands.Add("counttype", tooltip);
+
+            tooltip = new ToolTipDescriptions("diffmana",
+                new[] { "diffmana" }, "Absolute value between max mana and current mana",
+                "Get absolute difference between max mana and mana",
+                "if diffmana > 20\n\tskill Meditiation\nendif\n");
+            descriptionCommands.Add("diffmana", tooltip);
+
+            tooltip = new ToolTipDescriptions("diffstam",
+                new[] { "diffstam" }, "Absolute value between max stamina and current stamina",
+                "Get absolute difference between max stamina and stamina",
+                "if diffstam > 20\n\toverhead 'I need a rest'\nendif\n");
+            descriptionCommands.Add("diffstam", tooltip);
+
+            tooltip = new ToolTipDescriptions("diffhits",
+                new[] { "diffhits" }, "Absolute value between max hp and current hp",
+                "Get absolute difference between max hp and hp",
+                "if diffhits > 20\n\tcast 'Heal'\n\twft\n\ttarget 'self'\nendif\n");
+            descriptionCommands.Add("diffhits", tooltip);
+
+            tooltip = new ToolTipDescriptions("diffweight",
+                new[] { "diffweight" }, "Absolute value between weight hp and current weight",
+                "Get absolute difference between max weight and weight",
+                "if diffweight > 20\n\tcast 'Bless'\n\twft\n\ttarget 'self'\nendif\n");
+            descriptionCommands.Add("diffweight", tooltip);
+
+            tooltip = new ToolTipDescriptions("maxweight",
+                new[] { "maxweight" }, "Return player current max weight",
+                "Get player current max weight",
+                "if maxweight < 500\n\tcast 'Bless'\n\twft\n\ttarget 'self'\nendif\n");
+            descriptionCommands.Add("maxweight", tooltip);
+
+            tooltip = new ToolTipDescriptions("targetexists",
+                new[] { "targetexists" }, "Return player current max weight",
+                "Get player current max weight",
+                "if targetexists < 500\n\tcast 'Bless'\n\twft\n\ttarget 'self'\nendif\n");
+            descriptionCommands.Add("targetexists", tooltip);
+
+            tooltip = new ToolTipDescriptions("name",
+                new[] { "name" }, "Return player name",
+                "Get player name",
+                "if name = 'Bob'\n\toverhead 'Good... Its me'\nendif\n");
+            descriptionCommands.Add("name", tooltip);
+
+            tooltip = new ToolTipDescriptions("hue",
+                new[] { "hue (serial)" }, "Return hue of item",
+                "Get hue of item specified by serial.",
+                "if hue 'boardSerial' = 1763\n\toverhead 'Yeah, averboard!'\nendif\n");
+            descriptionCommands.Add("hue", tooltip);
+
+            tooltip = new ToolTipDescriptions("followers",
+                new[] { "followers" }, "Return the number of followers",
+                "Get the number of followers for player",
+                "if followers > 0\n\tsay 'all release'\nendif\n");
+            descriptionCommands.Add("followers", tooltip);
+
+            tooltip = new ToolTipDescriptions("clearignore",
+                new[] { "clearignore" }, "N/A",
+                "Clear list of ignored serials",
+                "clearignore\n");
+            descriptionCommands.Add("clearignore", tooltip);
+
+            tooltip = new ToolTipDescriptions("ignore",
+                new[] { "ignore (serial)" }, "N/A",
+                "Add mobile or item serial to ignore list",
+                "if targettype 'an eagle' as mob\n\tskill 'Animal Lore'\n\twft\n\ttarget mob\n\tignore mob\nendif\n");
+            descriptionCommands.Add("ignore", tooltip);
+
+            tooltip = new ToolTipDescriptions("setskill",
+                new[] { "setskill (skill_name) (up/donw/lock)" }, "N/A",
+                "Set state of skill specified by skill_name to state specified by second argument\n\tUse the name of skill visible in Skills tab from Paperdoll",
+                "setskill 'Blacksmithy' 'lock'\n");
+            descriptionCommands.Add("setskill", tooltip);
 
             #endregion
 
