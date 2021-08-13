@@ -653,11 +653,14 @@ namespace Assistant.Scripts
             if (gfx == 0)
             {
                 items = CommandHelper.GetItemsByName(name, hue, src, -1, range);
-                return (uint)items.Count;
+            }
+            else
+            {
+
+                items = CommandHelper.GetItemsById((ushort)gfx.Value, hue, src, -1, range);
             }
 
-            items = CommandHelper.GetItemsById((ushort)gfx.Value, hue, src, -1, range);
-            return (uint)items.Count;
+            return (uint)items.Sum(x => x.Amount);
         }
 
         private static readonly Dictionary<string, byte> _targetMap = new Dictionary<string, byte>
