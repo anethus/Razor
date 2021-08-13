@@ -656,7 +656,6 @@ namespace Assistant.Scripts
             }
             else
             {
-
                 items = CommandHelper.GetItemsById((ushort)gfx.Value, hue, src, -1, range);
             }
 
