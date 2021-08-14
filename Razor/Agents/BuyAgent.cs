@@ -21,7 +21,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using Assistant.UI;
@@ -136,7 +135,6 @@ namespace Assistant.Agents
             }
 
             Item pack = vendor.GetItemOnLayer(Layer.ShopBuy);
-
             if (pack == null || pack.Contains == null || pack.Contains.Count <= 0)
             {
                 return;
@@ -146,7 +144,6 @@ namespace Assistant.Agents
             int cost = 0;
             List<VendorBuyItem> buyList = new List<VendorBuyItem>();
             Dictionary<ushort, int> found = new Dictionary<ushort, int>();
-            bool lowGoldWarn = false;
             for (int i = 0; i < pack.Contains.Count; i++)
             {
                 Item item = (Item) pack.Contains[i];
@@ -226,7 +223,6 @@ namespace Assistant.Agents
 
             if (cost > World.Player.Gold && cost > 2000 && buyList.Count > 0 && !EnableGoldCheck)
             {
-                lowGoldWarn = true;
                 do
                 {
                     VendorBuyItem vbi = (VendorBuyItem) buyList[0];
@@ -253,13 +249,13 @@ namespace Assistant.Agents
                 } while (cost > World.Player.Gold && buyList.Count > 0);
             }
 
-            if (buyList.Count > 0)
-            {
-                args.Block = true;
-                BuyLists[serial] = buyList;
-                Client.Instance.SendToServer(new VendorBuyResponse(serial, buyList));
-                World.Player.SendMessage(MsgLevel.Force, LocString.BuyTotals, total, cost);
-            }
+            if (buyList.Count <= 0)
+                return;
+            
+            args.Block = true;
+            BuyLists[serial] = buyList;
+            Client.Instance.SendToServer(new VendorBuyResponse(serial, buyList));
+            World.Player.SendMessage(MsgLevel.Force, LocString.BuyTotals, total, cost);
 
         }
 
@@ -280,7 +276,6 @@ namespace Assistant.Agents
                     "Buy Agent Warning: Contains Count {0} does not match ExtInfo {1}.", pack.Contains.Count, count);
             }
 
-            //pack.Contains.Sort(ItemXYComparer.Instance);
 
             for (int i = count - 1; i >= 0; i--)
             {
