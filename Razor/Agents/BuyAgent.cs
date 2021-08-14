@@ -21,6 +21,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using Assistant.UI;
@@ -29,6 +30,11 @@ namespace Assistant.Agents
 {
     public class BuyAgent : Agent
     {
+        // For Outlands user don not have to have money in backpack
+        private static bool EnableGoldCheck = false;
+
+        private static List<BuyEntry> ListIds = new List<BuyEntry>();
+
         public class BuyEntry
         {
             public BuyEntry(ushort id, ushort amount)
@@ -132,13 +138,12 @@ namespace Assistant.Agents
             }
 
             Item pack = vendor.GetItemOnLayer(Layer.ShopBuy);
+
             if (pack == null || pack.Contains == null || pack.Contains.Count <= 0)
             {
                 return;
             }
-
-            pack.Contains.Sort(ItemXYComparer.Instance);
-
+            
             int total = 0;
             int cost = 0;
             List<VendorBuyItem> buyList = new List<VendorBuyItem>();
@@ -213,6 +218,7 @@ namespace Assistant.Agents
                                 }
 
                                 buyList.Add(new VendorBuyItem(item.Serial, count, item.Price));
+                                ListIds.Add(new BuyEntry(item.ItemID, (ushort)count));
                                 total += count;
                                 cost += item.Price * count;
                             }
@@ -221,7 +227,7 @@ namespace Assistant.Agents
                 }
             }
 
-            if (cost > World.Player.Gold && cost < 2000 && buyList.Count > 0)
+            if (cost > World.Player.Gold && cost > 2000 && buyList.Count > 0 && !EnableGoldCheck)
             {
                 lowGoldWarn = true;
                 do
@@ -255,13 +261,17 @@ namespace Assistant.Agents
                 args.Block = true;
                 BuyLists[serial] = buyList;
                 Client.Instance.SendToServer(new VendorBuyResponse(serial, buyList));
-                World.Player.SendMessage(MsgLevel.Force, LocString.BuyTotals, total, cost);
             }
 
-            if (lowGoldWarn)
+            foreach(var be in ListIds)
             {
-                World.Player.SendMessage(MsgLevel.Force, LocString.BuyLowGold);
+                if (World.Player.Backpack.GetCount(be.Id) < be.Amount)
+                {
+                    World.Player.SendMessage(MsgLevel.Force, LocString.BuyLowGold);
+                    return;
+                }
             }
+            World.Player.SendMessage(MsgLevel.Force, LocString.BuyTotals, total, cost);
         }
 
         private static readonly Dictionary<uint, List<VendorBuyItem>> BuyLists = new Dictionary<uint, List<VendorBuyItem>>();
@@ -281,7 +291,7 @@ namespace Assistant.Agents
                     "Buy Agent Warning: Contains Count {0} does not match ExtInfo {1}.", pack.Contains.Count, count);
             }
 
-            pack.Contains.Sort(ItemXYComparer.Instance);
+            //pack.Contains.Sort(ItemXYComparer.Instance);
 
             for (int i = count - 1; i >= 0; i--)
             {
@@ -471,7 +481,7 @@ namespace Assistant.Agents
         {
             m_Items?.Add(entry);
 
-            m_SubList?.Items.Add(entry);
+           Engine.MainWindow.SafeAction(_ => m_SubList?.Items.Add(entry));
 
             World.Player?.SendMessage(MsgLevel.Force, LocString.ItemAdded);
         }
