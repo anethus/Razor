@@ -32,9 +32,7 @@ namespace Assistant.Agents
     {
         // For Outlands user don not have to have money in backpack
         private static bool EnableGoldCheck = false;
-
-        private static List<BuyEntry> ListIds = new List<BuyEntry>();
-
+        
         public class BuyEntry
         {
             public BuyEntry(ushort id, ushort amount)
@@ -218,7 +216,6 @@ namespace Assistant.Agents
                                 }
 
                                 buyList.Add(new VendorBuyItem(item.Serial, count, item.Price));
-                                ListIds.Add(new BuyEntry(item.ItemID, (ushort)count));
                                 total += count;
                                 cost += item.Price * count;
                             }
@@ -261,17 +258,9 @@ namespace Assistant.Agents
                 args.Block = true;
                 BuyLists[serial] = buyList;
                 Client.Instance.SendToServer(new VendorBuyResponse(serial, buyList));
+                World.Player.SendMessage(MsgLevel.Force, LocString.BuyTotals, total, cost);
             }
 
-            foreach(var be in ListIds)
-            {
-                if (World.Player.Backpack.GetCount(be.Id) < be.Amount)
-                {
-                    World.Player.SendMessage(MsgLevel.Force, LocString.BuyLowGold);
-                    return;
-                }
-            }
-            World.Player.SendMessage(MsgLevel.Force, LocString.BuyTotals, total, cost);
         }
 
         private static readonly Dictionary<uint, List<VendorBuyItem>> BuyLists = new Dictionary<uint, List<VendorBuyItem>>();
