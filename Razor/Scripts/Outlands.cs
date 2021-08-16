@@ -320,7 +320,7 @@ namespace Assistant.Scripts
         /// <param name="args">Variable or Alias Name</param>
         /// <param name="quiet">True if variable, False if Alias</param>
         /// <returns></returns>
-        private static bool VarExist(string command, Variable[] args, bool quiet)
+        private static bool VarExist(string command, Variable[] args, bool quiet, bool force)
         {
             if (args.Length != 1)
                 throw new RunTimeError("Usage: varexist (name)");
