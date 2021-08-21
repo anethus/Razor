@@ -221,7 +221,7 @@ namespace Assistant.Agents
                 }
             }
 
-            if (cost > World.Player.Gold && cost > 2000 && buyList.Count > 0 && !EnableGoldCheck)
+            if (cost > World.Player.Gold && cost > 2000 && buyList.Count > 0 && EnableGoldCheck)
             {
                 do
                 {
