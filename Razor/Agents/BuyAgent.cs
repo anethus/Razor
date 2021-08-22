@@ -29,9 +29,6 @@ namespace Assistant.Agents
 {
     public class BuyAgent : Agent
     {
-        // For Outlands user don not have to have money in backpack
-        private static bool EnableGoldCheck = false;
-        
         public class BuyEntry
         {
             public BuyEntry(ushort id, ushort amount)
@@ -51,32 +48,6 @@ namespace Assistant.Agents
             public override string ToString()
             {
                 return $"{ItemID}\t{Amount}";
-            }
-        }
-
-        private class ItemXYComparer : IComparer<Item>
-        {
-            public static readonly ItemXYComparer Instance = new ItemXYComparer();
-
-            private ItemXYComparer()
-            {
-            }
-
-            public int Compare(Item x, Item y)
-            {
-                if (!(x is Item))
-                {
-                    return 1;
-                }
-                else if (!(y is Item))
-                {
-                    return -1;
-                }
-
-                int xsum = x.Position.X + x.Position.Y * 200;
-                int ysum = y.Position.X + y.Position.Y * 200;
-
-                return xsum.CompareTo(ysum);
             }
         }
 
@@ -221,34 +192,6 @@ namespace Assistant.Agents
                 }
             }
 
-            if (cost > World.Player.Gold && cost > 2000 && buyList.Count > 0 && !EnableGoldCheck)
-            {
-                do
-                {
-                    VendorBuyItem vbi = (VendorBuyItem) buyList[0];
-                    if (cost - vbi.TotalCost <= World.Player.Gold)
-                    {
-                        while (cost > World.Player.Gold && vbi.Amount > 0)
-                        {
-                            cost -= vbi.Price;
-                            --vbi.Amount;
-                            --total;
-                        }
-
-                        if (vbi.Amount <= 0)
-                        {
-                            buyList.RemoveAt(0);
-                        }
-                    }
-                    else
-                    {
-                        cost -= vbi.TotalCost;
-                        total -= vbi.Amount;
-                        buyList.RemoveAt(0);
-                    }
-                } while (cost > World.Player.Gold && buyList.Count > 0);
-            }
-
             if (buyList.Count <= 0)
                 return;
             
@@ -270,12 +213,6 @@ namespace Assistant.Agents
             }
 
             byte count = p.ReadByte();
-            if (count < pack.Contains.Count)
-            {
-                World.Player.SendMessage(MsgLevel.Debug,
-                    "Buy Agent Warning: Contains Count {0} does not match ExtInfo {1}.", pack.Contains.Count, count);
-            }
-
 
             for (int i = count - 1; i >= 0; i--)
             {
