@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Assistant.Core
 {
@@ -86,18 +87,14 @@ namespace Assistant.Core
                 return false;
             }
 
-            for (int i = Messages.Count - 1; i >= 0; i--)
+            var result = Messages.Any(s => s.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
+           
+            if(result && consume)
             {
-                if (Messages[i].IndexOf(text, StringComparison.OrdinalIgnoreCase) == -1)
-                    continue;
-
-                if(consume)
-                    Messages.RemoveAt( i );
-
-                return true;
+                Messages.RemoveAll(x => x.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
-            return false;
+            return result;
         }
     }
 }

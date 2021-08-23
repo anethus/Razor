@@ -563,10 +563,10 @@ namespace Assistant.Scripts
                     "attack", "cast", "dclick", "dclicktype", "dress", "drop", "droprelloc", "gumpresponse", "gumpclose",
                     "hotkey", "lasttarget", "lift", "lifttype", "menu", "menuresponse", "organizer", "overhead", "potion",
                     "promptresponse", "restock", "say", "whisper", "yell", "emote", "script", "scavenger", "sell", "setability",
-                    "setlasttarget",
+                    "setlasttarget", "insysmsg",
                     "setvar", "skill", "sysmsg", "target", "targettype", "targetrelloc", "undress", "useonce", "walk",
                     "wait", "pause", "waitforgump", "waitformenu", "waitforprompt", "waitfortarget", "clearsysmsg", "clearjournal",
-                    "waitforsysmsg", "clearhands", "clearall", "virtue", "random",
+                    "waitforsysmsg", "clearhands", "clearall", "virtue", "random", "varexist",
                     "warmode", "getlabel", "createlist", "clearlist", "removelist", "pushlist", "poplist", "createtimer", "removetimer", "settimer",
                     "unsetvar", "ignore", "clearignore", "rename", "setskill", "noto", "ingump", "gumpexists", "dead", "invul", "paralyzed",
                     "counttype", "diffmana", "diffstam", "diffhits", "diffweight", "maxweight", "targetexists", "find", "findlayer", "name",
@@ -854,6 +854,12 @@ namespace Assistant.Scripts
                 "clearsysmsg\n");
             descriptionCommands.Add("clearsysmsg", tooltip);
 
+            tooltip = new ToolTipDescriptions("insysmsg",
+                new[] { "insysmsg (text)" }, "True if text is in sysmsg",
+                "This command will check if passed text is in a sysmsg.\n\tWhen force flag is set to true then text will not be deleted from sysmsg.",
+                "if insysmsg tracking\n\t\toverhead 'TRACKING'\n\tendif\n");
+            descriptionCommands.Add("insysmsg", tooltip);
+
             tooltip = new ToolTipDescriptions("clearjournal",
                 new[] { "clearjournal" }, "N/A",
                 "This command (same as clearjournal) will clear the internal system message queue used with insysmsg.",
@@ -959,6 +965,12 @@ namespace Assistant.Scripts
                 "Unset a variable. If '!' is specified, unset a temporary variable. If both ! and @ are specified, unset a temporary local variable.",
                 "unsetvar myvar\n");
             descriptionCommands.Add("unsetvar", tooltip);
+
+            tooltip = new ToolTipDescriptions("varexist",
+                new[] { "varexist ('name')" }, "True if variable exists.",
+                "Check variable (or Aliase) exists.\n\tAdding @ to check will look for Aliase.",
+                "if varexist myvar\n\t\toverhead 'Exists'\n\tendif\n");
+            descriptionCommands.Add("varexist", tooltip);
 
             tooltip = new ToolTipDescriptions("rename",
                 new[] { "rename ('serial') ('name')" }, "N/A",
